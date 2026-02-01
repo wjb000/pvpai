@@ -10,47 +10,39 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #000;
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100vh;
+            overflow: hidden;
+            color: white;
         }
 
-        /* Loading Screen */
+        /* GLOBAL */
+        .hidden { display: none !important; }
+        canvas { display: block; width: 100%; height: 100vh; }
+
+        /* LOADING */
         #loading {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            inset: 0;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             z-index: 10000;
             transition: opacity 0.5s;
-        }
-        #loading.hidden {
-            opacity: 0;
-            pointer-events: none;
         }
         .loader {
             width: 60px;
             height: 60px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-top: 5px solid white;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top-color: white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .loading-text {
             color: white;
             margin-top: 20px;
@@ -58,206 +50,205 @@
             letter-spacing: 2px;
         }
 
-        /* Wallet Connection Modal */
+        /* WALLET MODAL */
         #walletModal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            inset: 0;
+            background: rgba(0,0,0,0.98);
             display: flex;
-            justify-content: center;
             align-items: center;
-            z-index: 10000;
-        }
-        #walletModal.hidden {
-            display: none;
+            justify-content: center;
+            z-index: 9999;
         }
         .wallet-container {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             padding: 50px;
             border-radius: 20px;
-            border: 3px solid #00ffff;
-            box-shadow: 0 0 60px rgba(0, 255, 255, 0.6);
-            max-width: 600px;
+            border: 3px solid #00ccff;
+            box-shadow: 0 0 60px rgba(0,204,255,0.6);
+            max-width: 700px;
             width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
         }
-        .wallet-container h1 {
-            color: #00ffff;
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 36px;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
-        }
-        .wallet-container .subtitle {
-            color: rgba(255, 255, 255, 0.7);
+        .wallet-header {
             text-align: center;
             margin-bottom: 40px;
+        }
+        .wallet-header h1 {
+            font-size: 48px;
+            background: linear-gradient(135deg, #00ccff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .wallet-header p {
+            color: rgba(255,255,255,0.7);
             font-size: 16px;
         }
 
-        /* Chain Selection */
-        .chain-selection {
-            margin-bottom: 30px;
+        .chain-selector {
+            margin-bottom: 35px;
         }
-        .chain-selection h3 {
-            color: #ffd700;
+        .chain-selector h3 {
+            color: #00ccff;
             margin-bottom: 15px;
             text-align: center;
+            font-size: 18px;
         }
-        .chain-options {
+        .chain-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
         }
-        .chain-option {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            padding: 15px;
-            border-radius: 10px;
+        .chain-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
         }
-        .chain-option:hover {
-            border-color: #00ffff;
-            background: rgba(0, 255, 255, 0.1);
+        .chain-card:hover {
+            border-color: #00ccff;
+            background: rgba(0,204,255,0.1);
+            transform: translateY(-2px);
         }
-        .chain-option.selected {
-            border-color: #00ffff;
-            background: rgba(0, 255, 255, 0.2);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+        .chain-card.selected {
+            border-color: #00ccff;
+            background: rgba(0,204,255,0.2);
+            box-shadow: 0 0 20px rgba(0,204,255,0.4);
         }
-        .chain-option .chain-name {
+        .chain-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+        .chain-name {
+            font-weight: 600;
             color: white;
-            font-weight: bold;
             font-size: 14px;
-            margin-top: 5px;
-        }
-        .chain-option .chain-icon {
-            font-size: 32px;
-            margin-bottom: 5px;
         }
 
         .wallet-buttons {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
         .wallet-btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
             border: none;
-            padding: 18px 30px;
+            padding: 20px 30px;
             border-radius: 12px;
+            color: white;
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
         }
-        .wallet-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        .wallet-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.5);
         }
-        .wallet-btn.metamask {
-            background: linear-gradient(135deg, #f6851b, #e2761b);
+        .wallet-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
-        .wallet-btn.phantom {
-            background: linear-gradient(135deg, #ab9ff2, #5b4cdb);
-        }
-        .wallet-btn.coinbase {
-            background: linear-gradient(135deg, #0052ff, #0041cc);
-        }
+        .wallet-btn.metamask { background: linear-gradient(135deg, #f6851b, #e2761b); }
+        .wallet-btn.phantom { background: linear-gradient(135deg, #ab9ff2, #5b4cdb); }
+        .wallet-btn.coinbase { background: linear-gradient(135deg, #0052ff, #0041cc); }
 
         .ai-section {
-            border-top: 2px solid rgba(255, 255, 255, 0.2);
-            padding-top: 25px;
-            margin-top: 25px;
+            border-top: 2px solid rgba(255,255,255,0.1);
+            padding-top: 30px;
+            margin-top: 30px;
         }
         .ai-section h3 {
             color: #ff00ff;
             margin-bottom: 15px;
             text-align: center;
+            font-size: 18px;
         }
-        #apiKeyInput {
+        .ai-input {
             width: 100%;
             padding: 15px;
             border: 2px solid #ff00ff;
             border-radius: 10px;
-            background: rgba(255, 0, 255, 0.1);
+            background: rgba(255,0,255,0.1);
             color: white;
             font-size: 16px;
             margin-bottom: 15px;
         }
-        #apiKeyInput::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .info-text {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 13px;
-            text-align: center;
-            margin-top: 15px;
-            line-height: 1.5;
-        }
-        .spectate-btn {
-            background: rgba(255, 255, 255, 0.1);
+        .ai-input::placeholder { color: rgba(255,255,255,0.5); }
+
+        .info-box {
+            background: rgba(0,204,255,0.1);
+            border: 1px solid rgba(0,204,255,0.3);
+            border-radius: 10px;
+            padding: 15px;
             margin-top: 20px;
         }
+        .info-box p {
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+        .info-box strong { color: #00ccff; }
 
-        /* Lobby Modal */
-        #lobbyModal {
+        .error-box {
+            background: rgba(255,0,0,0.1);
+            border: 1px solid rgba(255,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .error-box p {
+            color: #ff6666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* DASHBOARD */
+        #dashboard {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
+            inset: 0;
+            background: linear-gradient(135deg, #0f1419, #1a1f2e);
             overflow-y: auto;
+            z-index: 9998;
         }
-        #lobbyModal.visible {
-            display: flex;
-        }
-        .lobby-container {
+        .dashboard-header {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 40px;
-            border-radius: 20px;
-            border: 3px solid #ffd700;
-            box-shadow: 0 0 60px rgba(255, 215, 0, 0.6);
-            max-width: 700px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
+            padding: 30px;
+            border-bottom: 2px solid #00ccff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .lobby-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .lobby-header h2 {
-            color: #ffd700;
-            font-size: 32px;
+        .dashboard-header h1 {
+            font-size: 36px;
+            background: linear-gradient(135deg, #00ccff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 10px;
         }
-        .connected-wallet {
-            background: rgba(0, 255, 255, 0.1);
-            padding: 12px 20px;
-            border-radius: 10px;
-            border: 2px solid #00ffff;
+        .user-badge {
             display: inline-flex;
             align-items: center;
             gap: 10px;
+            background: rgba(0,204,255,0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #00ccff;
         }
-        .connected-wallet .status-dot {
+        .status-dot {
             width: 10px;
             height: 10px;
             background: #00ff00;
@@ -266,251 +257,239 @@
         }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .connected-wallet span {
-            color: #00ffff;
-            font-weight: bold;
+            50% { opacity: 0.4; }
         }
 
-        .stake-input-group {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 12px;
+        .dashboard-content {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 28px;
+            color: #00ccff;
             margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .stake-input-group label {
-            color: white;
+
+        .create-game-card {
+            background: linear-gradient(135deg, rgba(0,204,255,0.15), rgba(0,153,204,0.15));
+            border: 3px solid #00ccff;
+            border-radius: 15px;
+            padding: 35px;
+            margin-bottom: 40px;
+        }
+        .stake-input-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
             display: block;
-            margin-bottom: 12px;
-            font-weight: bold;
-            font-size: 16px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 8px;
+            font-weight: 600;
         }
-        .stake-input-wrapper {
-            position: relative;
-        }
-        #stakeAmount {
+        .stake-input {
             width: 100%;
-            padding: 18px 60px 18px 20px;
-            border: 2px solid #ffd700;
+            padding: 18px;
+            border: 2px solid #00ccff;
             border-radius: 10px;
-            background: rgba(255, 215, 0, 0.1);
+            background: rgba(0,204,255,0.1);
             color: white;
             font-size: 24px;
-            font-weight: bold;
+            font-weight: 600;
             text-align: center;
         }
-        .token-label {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #ffd700;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .color-picker-section {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-        .color-picker-section label {
-            color: white;
-            display: block;
-            margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 16px;
-            text-align: center;
-        }
-        .color-options {
+        .color-picker {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
         }
-        .color-option {
+        .color-btn {
             aspect-ratio: 1;
             border-radius: 10px;
             border: 3px solid transparent;
             cursor: pointer;
             transition: all 0.3s;
-            position: relative;
         }
-        .color-option:hover {
-            transform: scale(1.1);
-        }
-        .color-option.selected {
-            border-color: #fff;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-        }
-        .color-option.selected::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 0 0 10px black;
+        .color-btn:hover { transform: scale(1.1); }
+        .color-btn.selected {
+            border-color: white;
+            box-shadow: 0 0 20px rgba(255,255,255,0.8);
         }
 
-        .players-waiting {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 2px solid rgba(0, 255, 255, 0.3);
-        }
-        .players-waiting h3 {
-            color: #00ffff;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .player-count {
-            font-size: 18px;
-        }
-        .player-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .player-item {
-            background: rgba(0, 255, 255, 0.1);
-            padding: 12px 15px;
-            border-radius: 8px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-        }
-        .player-item.ai {
-            background: rgba(255, 0, 255, 0.1);
-            border-color: rgba(255, 0, 255, 0.3);
-        }
-        .player-item.you {
-            background: rgba(255, 215, 0, 0.2);
-            border-color: #ffd700;
-        }
-        .player-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .player-color-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-
-        .lobby-info {
-            background: rgba(255, 215, 0, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            margin-bottom: 20px;
-        }
-        .lobby-info p {
-            color: rgba(255, 255, 255, 0.9);
-            margin: 5px 0;
-            font-size: 14px;
-        }
-        .lobby-info strong {
-            color: #ffd700;
-        }
-
-        #joinGameBtn {
+        .create-btn {
             width: 100%;
-            padding: 20px;
+            padding: 22px;
             background: linear-gradient(135deg, #00ff88, #00cc66);
             border: none;
             border-radius: 12px;
             color: #000;
             font-size: 22px;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        #joinGameBtn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 8px 30px rgba(0, 255, 136, 0.5);
+        .create-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,255,136,0.5);
         }
-        #joinGameBtn:disabled {
-            opacity: 0.5;
+
+        .lobby-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        .lobby-card {
+            background: linear-gradient(135deg, rgba(26,26,46,0.9), rgba(22,33,62,0.9));
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .lobby-card:hover {
+            border-color: #00ccff;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,204,255,0.3);
+        }
+        .lobby-card.full {
+            opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
-        .logout-btn {
+        .lobby-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .lobby-id {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+        .lobby-status {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .lobby-status.waiting {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+        }
+        .lobby-status.active {
+            background: rgba(0,255,0,0.2);
+            color: #00ff00;
+        }
+        .lobby-status.full {
+            background: rgba(255,0,0,0.2);
+            color: #ff6666;
+        }
+        .lobby-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ccff;
+        }
+        .join-lobby-btn {
             width: 100%;
             padding: 15px;
-            background: rgba(255, 0, 0, 0.2);
+            background: linear-gradient(135deg, #00ccff, #0099ff);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .join-lobby-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,204,255,0.5);
+        }
+        .join-lobby-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .logout-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .logout-btn {
+            padding: 15px 30px;
+            background: rgba(255,0,0,0.2);
             border: 2px solid #ff0000;
             border-radius: 10px;
             color: #ff6666;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            margin-top: 15px;
             transition: all 0.3s;
         }
         .logout-btn:hover {
-            background: rgba(255, 0, 0, 0.3);
+            background: rgba(255,0,0,0.3);
         }
 
-        /* Game HUD */
+        /* GAME HUD */
         #gameHUD {
             position: fixed;
             top: 20px;
             left: 20px;
             z-index: 1000;
-            display: none;
-        }
-        #gameHUD.visible {
-            display: block;
         }
         .hud-panel {
-            background: rgba(0, 0, 0, 0.85);
-            padding: 15px 20px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #00ccff;
             border-radius: 12px;
-            border: 2px solid #00ffff;
-            color: white;
+            padding: 18px 22px;
             margin-bottom: 12px;
-            min-width: 280px;
+            min-width: 300px;
             backdrop-filter: blur(10px);
         }
         .hud-row {
             display: flex;
             justify-content: space-between;
-            margin: 8px 0;
-            font-size: 14px;
+            margin: 10px 0;
+            font-size: 15px;
         }
-        .hud-label {
-            color: rgba(255, 255, 255, 0.7);
-        }
+        .hud-label { color: rgba(255,255,255,0.7); }
         .hud-value {
-            color: #00ffff;
-            font-weight: bold;
+            color: #00ccff;
+            font-weight: 700;
         }
-        .health-bar-container {
-            margin-top: 12px;
-        }
+        .health-bar-container { margin-top: 15px; }
         .health-bar {
             width: 100%;
-            height: 28px;
-            background: rgba(255, 0, 0, 0.3);
+            height: 32px;
+            background: rgba(255,0,0,0.3);
             border-radius: 6px;
             overflow: hidden;
             position: relative;
-            border: 2px solid rgba(255, 0, 0, 0.5);
+            border: 2px solid rgba(255,0,0,0.5);
         }
         .health-bar-fill {
             height: 100%;
@@ -519,69 +498,67 @@
         }
         .health-text {
             position: absolute;
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
             color: white;
-            text-shadow: 0 0 5px black, 0 0 10px black;
-            line-height: 28px;
-            top: 0;
+            text-shadow: 0 0 10px black;
         }
         .ammo-display {
-            font-size: 28px;
-            font-weight: bold;
+            font-size: 32px;
+            font-weight: 700;
             color: #ffd700;
-            margin-top: 12px;
             text-align: center;
+            margin-top: 15px;
         }
-        .players-alive-hud {
-            color: #00ffff;
-            font-size: 18px;
-            margin-top: 12px;
+        .players-alive {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ccff;
             text-align: center;
-            font-weight: bold;
+            margin-top: 12px;
         }
 
-        /* Crosshair */
+        /* CROSSHAIR */
         #crosshair {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
             pointer-events: none;
-            z-index: 999;
+            z-index: 998;
         }
         .crosshair-line {
             position: absolute;
-            background: rgba(255, 255, 255, 0.9);
+            background: white;
             box-shadow: 0 0 5px black;
         }
-        .crosshair-line.h {
-            width: 25px;
+        .crosshair-h {
+            width: 30px;
             height: 2px;
-            left: 7.5px;
             top: 19px;
+            left: 5px;
         }
-        .crosshair-line.v {
+        .crosshair-v {
             width: 2px;
-            height: 25px;
+            height: 30px;
+            top: 5px;
             left: 19px;
-            top: 7.5px;
         }
-        .crosshair-center {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 0, 0, 0.9);
-            left: 18px;
-            top: 18px;
+        .crosshair-dot {
+            width: 5px;
+            height: 5px;
+            background: #ff0000;
             border-radius: 50%;
+            position: absolute;
+            top: 17.5px;
+            left: 17.5px;
             box-shadow: 0 0 5px black;
         }
 
-        /* Kill Feed */
+        /* KILL FEED */
         #killFeed {
             position: fixed;
             top: 20px;
@@ -590,77 +567,58 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-width: 350px;
+            max-width: 400px;
         }
-        .kill-message {
-            background: rgba(0, 0, 0, 0.85);
+        .kill-msg {
+            background: rgba(0,0,0,0.9);
             padding: 12px 18px;
             border-radius: 8px;
             border-left: 4px solid #ff0000;
             color: white;
             font-size: 14px;
-            animation: slideIn 0.3s ease, fadeOut 0.5s ease 4.5s forwards;
+            animation: slideIn 0.3s, fadeOut 0.5s 4.5s forwards;
         }
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         @keyframes fadeOut {
-            to {
-                opacity: 0;
-                transform: translateX(100%);
-            }
+            to { opacity: 0; transform: translateX(100%); }
         }
 
-        /* Coin Popup */
+        /* COIN POPUP */
         #coinPopup {
             position: fixed;
             bottom: 150px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 170, 0, 0.95));
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
             border: 4px solid #ffd700;
             border-radius: 15px;
-            padding: 20px 30px;
+            padding: 25px 35px;
             z-index: 1000;
-            display: none;
             text-align: center;
             min-width: 350px;
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
-        }
-        #coinPopup.visible {
-            display: block;
-            animation: popupBounce 0.5s ease;
-        }
-        @keyframes popupBounce {
-            0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
-            50% { transform: translateX(-50%) scale(1.05); }
-            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+            box-shadow: 0 0 50px rgba(255,215,0,0.8);
         }
         #coinPopup h3 {
             color: #000;
-            margin-bottom: 10px;
-            font-size: 22px;
+            font-size: 24px;
+            margin-bottom: 12px;
         }
         #coinPopup p {
             color: #000;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            font-size: 15px;
         }
         #coinPopup button {
             background: #000;
             color: #ffd700;
             border: none;
-            padding: 12px 40px;
+            padding: 15px 45px;
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
@@ -669,199 +627,148 @@
             transform: scale(1.05);
         }
 
-        /* Winner Modal */
-        #winnerModal {
+        /* MODALS */
+        .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            justify-content: center;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            display: flex;
             align-items: center;
+            justify-content: center;
             z-index: 10001;
         }
-        #winnerModal.visible {
-            display: flex;
-        }
-        .winner-container {
-            background: linear-gradient(135deg, #ffd700, #ffaa00);
+        .modal-content {
             padding: 60px;
             border-radius: 20px;
-            border: 5px solid #fff;
-            box-shadow: 0 0 80px rgba(255, 215, 0, 0.9);
             text-align: center;
-            animation: winnerAppear 0.6s ease;
+            animation: modalAppear 0.5s;
         }
-        @keyframes winnerAppear {
-            from {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+        @keyframes modalAppear {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
-        .winner-container h1 {
-            font-size: 52px;
+        .winner-modal {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            border: 5px solid white;
+            box-shadow: 0 0 80px rgba(255,215,0,0.9);
+        }
+        .winner-modal h1 {
+            font-size: 56px;
             color: #000;
             margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
-        .winner-container .winnings {
-            font-size: 32px;
+        .winnings-display {
+            font-size: 36px;
+            font-weight: 700;
             color: #000;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .winner-container .breakdown {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            border-radius: 10px;
             margin: 20px 0;
         }
-        .winner-container .breakdown p {
+        .breakdown-box {
+            background: rgba(0,0,0,0.1);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+        .breakdown-box p {
             color: #000;
             margin: 8px 0;
             font-size: 16px;
         }
-        .winner-container button {
+        .modal-btn {
             background: #000;
             color: #ffd700;
             border: none;
             padding: 18px 50px;
             font-size: 20px;
+            font-weight: 700;
             border-radius: 12px;
             cursor: pointer;
-            font-weight: bold;
             margin: 10px;
             transition: all 0.3s;
         }
-        .winner-container button:hover {
+        .modal-btn:hover {
             transform: scale(1.05);
         }
 
-        /* Defeated Modal */
-        #defeatedModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10001;
-        }
-        #defeatedModal.visible {
-            display: flex;
-        }
-        .defeated-container {
+        .defeat-modal {
             background: linear-gradient(135deg, #8b0000, #ff0000);
-            padding: 60px;
-            border-radius: 20px;
-            border: 5px solid #fff;
-            box-shadow: 0 0 80px rgba(255, 0, 0, 0.8);
-            text-align: center;
+            border: 5px solid white;
+            box-shadow: 0 0 80px rgba(255,0,0,0.8);
         }
-        .defeated-container h1 {
-            font-size: 48px;
-            color: #fff;
+        .defeat-modal h1 {
+            font-size: 52px;
+            color: white;
             margin-bottom: 20px;
         }
-        .defeated-container p {
+        .defeat-modal p {
             font-size: 20px;
-            color: #fff;
-            margin-bottom: 30px;
+            color: white;
+            margin: 15px 0;
         }
-        .defeated-container button {
-            background: #fff;
+        .defeat-modal .modal-btn {
+            background: white;
             color: #8b0000;
-            border: none;
-            padding: 18px 50px;
-            font-size: 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
         }
 
-        /* Instructions */
+        /* INSTRUCTIONS */
         #instructions {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.85);
-            padding: 15px 30px;
+            background: rgba(0,0,0,0.9);
+            padding: 15px 35px;
             border-radius: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255,255,255,0.3);
             color: white;
-            font-size: 14px;
-            text-align: center;
-            z-index: 1000;
+            font-size: 15px;
+            z-index: 999;
             backdrop-filter: blur(10px);
-            display: none;
-        }
-        #instructions.visible {
-            display: block;
         }
 
-        /* Mobile */
         @media (max-width: 768px) {
-            .wallet-container {
+            .wallet-container,
+            .modal-content {
                 padding: 30px 20px;
             }
-            .lobby-container {
-                padding: 25px 20px;
+            .lobby-grid {
+                grid-template-columns: 1fr;
             }
-            .color-options {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 8px;
-            }
-            .hud-panel {
-                min-width: 220px;
-                padding: 12px 15px;
-            }
-            #coinPopup {
-                min-width: 280px;
-                padding: 15px 20px;
+            .dashboard-content {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
     <div id="loading">
         <div class="loader"></div>
-        <div class="loading-text">LOADING BATTLE ARENA...</div>
+        <div class="loading-text">INITIALIZING BATTLE ARENA...</div>
     </div>
 
-    <!-- Wallet Connection Modal -->
     <div id="walletModal">
         <div class="wallet-container">
-            <h1>PvP AI</h1>
-            <p class="subtitle">Crypto-Powered Battle Royale</p>
+            <div class="wallet-header">
+                <h1>PvP AI</h1>
+                <p>Crypto-Powered Battle Royale</p>
+            </div>
 
-            <div class="chain-selection">
+            <div class="chain-selector">
                 <h3>Select Blockchain</h3>
-                <div class="chain-options">
-                    <div class="chain-option selected" data-chain="eth" data-token="ETH" onclick="selectChain(this)">
+                <div class="chain-grid">
+                    <div class="chain-card selected" data-chain="eth" data-token="ETH" onclick="selectChain(this)">
                         <div class="chain-icon">⟠</div>
                         <div class="chain-name">Ethereum</div>
                     </div>
-                    <div class="chain-option" data-chain="sol" data-token="SOL" onclick="selectChain(this)">
+                    <div class="chain-card" data-chain="sol" data-token="SOL" onclick="selectChain(this)">
                         <div class="chain-icon">◎</div>
                         <div class="chain-name">Solana</div>
                     </div>
-                    <div class="chain-option" data-chain="base" data-token="ETH" onclick="selectChain(this)">
+                    <div class="chain-card" data-chain="base" data-token="ETH" onclick="selectChain(this)">
                         <div class="chain-icon">🔵</div>
                         <div class="chain-name">Base</div>
                     </div>
-                    <div class="chain-option" data-chain="polygon" data-token="MATIC" onclick="selectChain(this)">
+                    <div class="chain-card" data-chain="polygon" data-token="MATIC" onclick="selectChain(this)">
                         <div class="chain-icon">🟣</div>
                         <div class="chain-name">Polygon</div>
                     </div>
@@ -881,95 +788,99 @@
             </div>
 
             <div class="ai-section">
-                <h3>🤖 AI Player Mode</h3>
-                <input type="text" id="apiKeyInput" placeholder="Enter Claude or OpenAI API Key">
+                <h3>🤖 AI Bot Mode</h3>
+                <input type="text" class="ai-input" id="apiKeyInput" placeholder="Enter Claude or OpenAI API Key">
                 <button class="wallet-btn" onclick="connectAsAI()">
                     Join as AI Bot
                 </button>
-                <p class="info-text">AI bots play autonomously using your API key</p>
             </div>
 
-            <button class="wallet-btn spectate-btn" onclick="spectateMode()">
-                👁️ Spectate (No Wallet Required)
-            </button>
+            <div class="info-box">
+                <p><strong>⚠️ PROTOTYPE NOTE:</strong></p>
+                <p>• This is a client-side prototype</p>
+                <p>• Real wallet required (no mock mode)</p>
+                <p>• Multiplayer simulated locally</p>
+                <p>• Production requires backend server</p>
+            </div>
 
-            <p class="info-text">
-                ⚠️ PROTOTYPE: Simulated multiplayer. Real production requires backend server.
-            </p>
+            <div id="walletError" class="error-box hidden">
+                <p id="walletErrorText"></p>
+            </div>
         </div>
     </div>
 
-    <!-- Lobby Modal -->
-    <div id="lobbyModal">
-        <div class="lobby-container">
-            <div class="lobby-header">
-                <h2>⚔️ Battle Lobby</h2>
-                <div class="connected-wallet">
-                    <div class="status-dot"></div>
-                    <span id="connectedStatus">Loading...</span>
+    <div id="dashboard" class="hidden">
+        <div class="dashboard-header">
+            <h1>Battle Dashboard</h1>
+            <div class="user-badge">
+                <div class="status-dot"></div>
+                <span id="userDisplay">Connected</span>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="section-title">
+                <span>🎮</span>
+                <span>Create New Game</span>
+            </div>
+
+            <div class="create-game-card">
+                <div class="stake-input-row">
+                    <div class="input-group">
+                        <label for="stakeAmount">Stake Amount</label>
+                        <input type="number" id="stakeAmount" class="stake-input" value="0.01" step="0.001" min="0.001">
+                    </div>
+                    <div class="input-group">
+                        <label>Token</label>
+                        <input type="text" id="tokenDisplay" class="stake-input" readonly value="ETH" style="max-width:150px">
+                    </div>
                 </div>
-            </div>
 
-            <div class="stake-input-group">
-                <label for="stakeAmount">Stake Amount</label>
-                <div class="stake-input-wrapper">
-                    <input type="number" id="stakeAmount" placeholder="0.01" step="0.001" min="0.001" value="0.01">
-                    <span class="token-label" id="tokenLabel">ETH</span>
+                <div class="input-group">
+                    <label>🎨 Robot Color</label>
+                    <div class="color-picker">
+                        <div class="color-btn selected" style="background:#00ffff" data-color="0x00ffff" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#ff00ff" data-color="0xff00ff" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#00ff00" data-color="0x00ff00" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#ffff00" data-color="0xffff00" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#ff6600" data-color="0xff6600" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#ff0000" data-color="0xff0000" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#0000ff" data-color="0x0000ff" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#ffffff" data-color="0xffffff" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#ff1493" data-color="0xff1493" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#9370db" data-color="0x9370db" onclick="selectColor(this)"></div>
+                    </div>
                 </div>
+
+                <button class="create-btn" onclick="createGame()">⚔️ Create & Join Game</button>
             </div>
 
-            <div class="color-picker-section">
-                <label>🎨 Choose Your Robot Color</label>
-                <div class="color-options">
-                    <div class="color-option selected" style="background: #00ffff" data-color="0x00ffff" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #ff00ff" data-color="0xff00ff" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #00ff00" data-color="0x00ff00" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #ffff00" data-color="0xffff00" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #ff6600" data-color="0xff6600" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #ff0000" data-color="0xff0000" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #0000ff" data-color="0x0000ff" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #ffffff" data-color="0xffffff" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #ff1493" data-color="0xff1493" onclick="selectColor(this)"></div>
-                    <div class="color-option" style="background: #9370db" data-color="0x9370db" onclick="selectColor(this)"></div>
-                </div>
+            <div class="section-title">
+                <span>🏟️</span>
+                <span>Active Lobbies (<span id="lobbyCount">0</span>)</span>
             </div>
 
-            <div class="players-waiting">
-                <h3>
-                    <span>Players in Lobby</span>
-                    <span class="player-count"><span id="playerCount">0</span>/10</span>
-                </h3>
-                <div class="player-list" id="playerList"></div>
+            <div class="lobby-grid" id="lobbyGrid">
+                <!-- Lobbies populated by JS -->
             </div>
 
-            <div class="lobby-info">
-                <p><strong>Game Rules:</strong></p>
-                <p>• 2-10 players per match</p>
-                <p>• Last player standing wins the pot</p>
-                <p>• Platform fee: <strong>5%</strong></p>
-                <p>• Exit early = keep earnings, close tab = death</p>
+            <div class="logout-section">
+                <button class="logout-btn" onclick="logout()">
+                    🚪 Disconnect Wallet
+                </button>
             </div>
-
-            <button id="joinGameBtn" onclick="joinGame()">
-                ⚔️ Join Battle
-            </button>
-
-            <button class="logout-btn" onclick="logout()">
-                🚪 Disconnect Wallet
-            </button>
         </div>
     </div>
 
-    <!-- Game HUD -->
-    <div id="gameHUD">
+    <div id="gameHUD" class="hidden">
         <div class="hud-panel">
             <div class="hud-row">
                 <span class="hud-label">Wallet:</span>
                 <span class="hud-value" id="hudWallet">---</span>
             </div>
             <div class="hud-row">
-                <span class="hud-label">Balance:</span>
-                <span class="hud-value" id="hudBalance">0.00</span>
+                <span class="hud-label">Stake:</span>
+                <span class="hud-value" id="hudStake">0.00</span>
             </div>
             <div class="hud-row">
                 <span class="hud-label">Collected:</span>
@@ -977,66 +888,60 @@
             </div>
             <div class="health-bar-container">
                 <div class="health-bar">
-                    <div class="health-bar-fill" id="healthBar" style="width: 100%"></div>
+                    <div class="health-bar-fill" id="healthBar" style="width:100%"></div>
                     <div class="health-text" id="healthText">100 / 100 HP</div>
                 </div>
             </div>
             <div class="ammo-display">
                 🔫 <span id="ammoCount">30</span> / ∞
             </div>
-            <div class="players-alive-hud">
+            <div class="players-alive">
                 👥 <span id="playersAlive">10</span> alive
             </div>
         </div>
     </div>
 
-    <!-- Crosshair -->
-    <div id="crosshair">
-        <div class="crosshair-line h"></div>
-        <div class="crosshair-line v"></div>
-        <div class="crosshair-center"></div>
+    <div id="crosshair" class="hidden">
+        <div class="crosshair-line crosshair-h"></div>
+        <div class="crosshair-line crosshair-v"></div>
+        <div class="crosshair-dot"></div>
     </div>
 
-    <!-- Kill Feed -->
     <div id="killFeed"></div>
 
-    <!-- Coin Popup -->
-    <div id="coinPopup">
+    <div id="coinPopup" class="hidden">
         <h3>💰 Coins Dropped!</h3>
-        <p id="coinInfo">Player: 0x123... | Amount: 0.05 ETH</p>
+        <p id="coinInfo"></p>
         <button onclick="collectCoins()">COLLECT</button>
     </div>
 
-    <!-- Winner Modal -->
-    <div id="winnerModal">
-        <div class="winner-container">
+    <div id="winnerModal" class="modal hidden">
+        <div class="modal-content winner-modal">
             <h1>🏆 VICTORY ROYALE! 🏆</h1>
-            <div class="winnings" id="totalWinnings">0.00 ETH</div>
-            <div class="breakdown">
+            <div class="winnings-display" id="totalWinnings"></div>
+            <div class="breakdown-box">
                 <p><strong>Breakdown:</strong></p>
-                <p>Your Stake: <span id="yourStake">0.00 ETH</span></p>
-                <p>Eliminated Players: <span id="collected">0.00 ETH</span></p>
-                <p>Platform Fee (5%): <span id="platformFee">0.00 ETH</span></p>
-                <p><strong>Net Winnings: <span id="netWinnings">0.00 ETH</span></strong></p>
+                <p>Your Stake: <span id="yourStake"></span></p>
+                <p>Eliminated Players: <span id="collectedAmount"></span></p>
+                <p>Platform Fee (5%): <span id="platformFee"></span></p>
+                <p><strong>Net Profit: <span id="netProfit"></span></strong></p>
             </div>
-            <button onclick="returnToLobby()">Return to Lobby</button>
-            <button onclick="logout()">Disconnect & Exit</button>
+            <button class="modal-btn" onclick="returnToDashboard()">Return to Dashboard</button>
+            <button class="modal-btn" onclick="logout()">Disconnect & Exit</button>
         </div>
     </div>
 
-    <!-- Defeated Modal -->
-    <div id="defeatedModal">
-        <div class="defeated-container">
+    <div id="defeatModal" class="modal hidden">
+        <div class="modal-content defeat-modal">
             <h1>💀 DEFEATED 💀</h1>
-            <p id="defeatMessage">You were eliminated!</p>
+            <p id="defeatMessage"></p>
             <p>Better luck next time!</p>
-            <button onclick="returnToLobby()">Return to Lobby</button>
+            <button class="modal-btn" onclick="returnToDashboard()">Return to Dashboard</button>
         </div>
     </div>
 
-    <!-- Instructions -->
-    <div id="instructions">
-        <strong>WASD</strong> Move | <strong>Mouse</strong> Look | <strong>Click</strong> Shoot | <strong>ESC</strong> Menu
+    <div id="instructions" class="hidden">
+        <strong>WASD</strong> Move | <strong>Mouse</strong> Look | <strong>Click</strong> Shoot | <strong>ESC</strong> Pause
     </div>
 
     <script type="importmap">
@@ -1057,281 +962,255 @@
         import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
-        // ==================== GAME STATE ====================
+        // ==================== STATE ====================
         const gameState = {
-            connected: false,
-            spectating: false,
-            isAI: false,
             wallet: null,
             chain: 'eth',
             token: 'ETH',
+            isAI: false,
             apiKey: null,
             inGame: false,
-            players: [],
+            stake: 0.01,
+            collected: 0,
             health: 100,
             maxHealth: 100,
             ammo: 30,
             maxAmmo: 30,
-            stake: 0.01,
-            collected: 0,
             robotColor: 0x00ffff,
             kills: 0,
+            lobbies: [],
+            currentLobby: null,
             nearbyCoins: null
         };
 
-        // ==================== CHAIN SELECTION ====================
-        window.selectChain = function(element) {
-            document.querySelectorAll('.chain-option').forEach(el => el.classList.remove('selected'));
-            element.classList.add('selected');
-            gameState.chain = element.getAttribute('data-chain');
-            gameState.token = element.getAttribute('data-token');
-        };
+        let scene, camera, renderer, composer, clock;
+        let playerGroup, playerModel, playerMixer, gun, muzzleFlash;
+        let otherPlayers = [], bullets = [], coins = [];
+        let keys = { w: false, a: false, s: false, d: false, shift: false };
+        let mouseX = 0, mouseY = 0, mouseDown = false, shootCooldown = 0;
+        const moveSpeed = 0.25;
 
         // ==================== WALLET CONNECTION ====================
-        window.connectWallet = async function(walletType) {
-            console.log(`Connecting ${walletType} on ${gameState.chain}...`);
+        window.selectChain = function(el) {
+            document.querySelectorAll('.chain-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            gameState.chain = el.dataset.chain;
+            gameState.token = el.dataset.token;
+        };
+
+        window.connectWallet = async function(type) {
+            const errorBox = document.getElementById('walletError');
+            const errorText = document.getElementById('walletErrorText');
 
             try {
                 let wallet;
 
-                if (walletType === 'metamask' && gameState.chain !== 'sol') {
-                    if (typeof window.ethereum !== 'undefined') {
-                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                        wallet = accounts[0];
+                if (type === 'metamask') {
+                    if (typeof window.ethereum === 'undefined') {
+                        throw new Error('MetaMask not installed. Please install MetaMask extension.');
+                    }
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    wallet = accounts[0];
 
-                        // Check if correct chain
-                        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-                        console.log('Connected to chain:', chainId);
-                    } else {
-                        wallet = '0x' + Math.random().toString(36).substring(2, 42);
+                    // Verify chain
+                    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                    console.log('Connected to chain:', chainId);
+
+                } else if (type === 'phantom') {
+                    if (!window.solana || !window.solana.isPhantom) {
+                        throw new Error('Phantom wallet not installed. Please install Phantom extension.');
                     }
-                } else if (walletType === 'phantom' && gameState.chain === 'sol') {
-                    if (window.solana && window.solana.isPhantom) {
-                        const resp = await window.solana.connect();
-                        wallet = resp.publicKey.toString();
-                    } else {
-                        wallet = Math.random().toString(36).substring(2, 44);
-                    }
-                } else {
-                    // Mock wallet for demo
-                    wallet = (gameState.chain === 'sol' ? '' : '0x') + Math.random().toString(36).substring(2, 42);
+                    const resp = await window.solana.connect();
+                    wallet = resp.publicKey.toString();
+
+                } else if (type === 'coinbase') {
+                    throw new Error('Coinbase Wallet integration coming soon. Use MetaMask or Phantom.');
                 }
 
                 gameState.wallet = wallet;
-                gameState.connected = true;
-                gameState.isAI = false;
-
-                proceedToLobby();
+                proceedToDashboard();
 
             } catch (error) {
-                console.error('Connection error:', error);
-                alert('Connection failed. Using demo mode.');
-                gameState.wallet = '0x' + Math.random().toString(36).substring(2, 42);
-                gameState.connected = true;
-                proceedToLobby();
+                console.error('Wallet connection error:', error);
+                errorText.textContent = error.message;
+                errorBox.classList.remove('hidden');
             }
         };
 
         window.connectAsAI = function() {
             const apiKey = document.getElementById('apiKeyInput').value;
-            if (!apiKey || apiKey.length < 10) {
-                alert('Please enter a valid API key (min 10 characters)');
+            if (!apiKey || apiKey.length < 20) {
+                alert('Please enter a valid API key (minimum 20 characters)');
                 return;
             }
 
-            gameState.wallet = 'AI-' + Math.random().toString(36).substring(2, 12);
-            gameState.apiKey = apiKey;
-            gameState.connected = true;
+            gameState.wallet = 'AI-' + Math.random().toString(36).substring(2, 14);
             gameState.isAI = true;
+            gameState.apiKey = apiKey;
 
-            proceedToLobby();
+            proceedToDashboard();
         };
 
-        window.spectateMode = function() {
-            gameState.spectating = true;
-            gameState.connected = false;
-            alert('Spectate mode not yet implemented in this prototype.');
-        };
-
-        function proceedToLobby() {
+        function proceedToDashboard() {
             document.getElementById('walletModal').classList.add('hidden');
-            document.getElementById('lobbyModal').classList.add('visible');
-            document.getElementById('tokenLabel').textContent = gameState.token;
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('tokenDisplay').value = gameState.token;
 
             const displayWallet = gameState.isAI ?
                 '🤖 AI Bot' :
                 gameState.wallet.substring(0, 6) + '...' + gameState.wallet.substring(gameState.wallet.length - 4);
+            document.getElementById('userDisplay').textContent = displayWallet + ' (' + gameState.token + ')';
 
-            document.getElementById('connectedStatus').textContent = displayWallet + ' (' + gameState.token + ')';
-
-            simulateLobbyPlayers();
+            simulateLobbies();
+            document.getElementById('loading').classList.add('hidden');
         }
 
         // ==================== COLOR SELECTION ====================
-        window.selectColor = function(element) {
-            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
-            element.classList.add('selected');
-            gameState.robotColor = parseInt(element.getAttribute('data-color'));
+        window.selectColor = function(el) {
+            document.querySelectorAll('.color-btn').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            gameState.robotColor = parseInt(el.dataset.color);
         };
 
-        // ==================== LOBBY ====================
-        function simulateLobbyPlayers() {
-            const count = Math.floor(Math.random() * 6) + 1;
-            gameState.players = [{
-                id: gameState.wallet,
-                wallet: gameState.wallet,
-                isAI: gameState.isAI,
-                stake: 0.01,
-                color: gameState.robotColor,
-                health: 100
-            }];
-
-            const colors = [0x00ffff, 0xff00ff, 0x00ff00, 0xffff00, 0xff6600, 0xff0000, 0x0000ff, 0xffffff, 0xff1493, 0x9370db];
+        // ==================== LOBBIES ====================
+        function simulateLobbies() {
+            const count = Math.floor(Math.random() * 4) + 2;
+            gameState.lobbies = [];
 
             for (let i = 0; i < count; i++) {
-                const isAI = Math.random() > 0.6;
-                gameState.players.push({
-                    id: (isAI ? 'AI-' : '0x') + Math.random().toString(36).substring(2, 12),
-                    wallet: (isAI ? 'AI-' : '0x') + Math.random().toString(36).substring(2, 42),
-                    isAI: isAI,
-                    stake: 0.01,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    health: 100
+                const playerCount = Math.floor(Math.random() * 9) + 1;
+                const status = playerCount >= 10 ? 'full' : playerCount >= 2 ? 'active' : 'waiting';
+                const totalPot = (0.01 * playerCount).toFixed(3);
+
+                gameState.lobbies.push({
+                    id: 'LOBBY-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                    players: playerCount,
+                    maxPlayers: 10,
+                    totalPot: totalPot,
+                    status: status,
+                    token: gameState.token
                 });
             }
 
-            updateLobbyUI();
+            renderLobbies();
         }
 
-        function updateLobbyUI() {
-            const playerList = document.getElementById('playerList');
-            const playerCount = document.getElementById('playerCount');
+        function renderLobbies() {
+            const grid = document.getElementById('lobbyGrid');
+            const count = document.getElementById('lobbyCount');
 
-            playerCount.textContent = gameState.players.length;
-            playerList.innerHTML = '';
+            count.textContent = gameState.lobbies.length;
+            grid.innerHTML = '';
 
-            gameState.players.forEach(player => {
-                const div = document.createElement('div');
-                const isYou = player.id === gameState.wallet;
-                div.className = 'player-item' + (player.isAI ? ' ai' : '') + (isYou ? ' you' : '');
+            gameState.lobbies.forEach(lobby => {
+                const card = document.createElement('div');
+                card.className = `lobby-card ${lobby.status}`;
+                card.onclick = () => lobby.status !== 'full' && joinLobby(lobby);
 
-                const displayName = player.isAI ?
-                    '🤖 ' + player.id.substring(0, 12) :
-                    player.wallet.substring(0, 6) + '...' + player.wallet.substring(player.wallet.length - 4);
-
-                div.innerHTML = `
-                    <div class="player-name">
-                        <div class="player-color-dot" style="background: #${player.color.toString(16).padStart(6, '0')}"></div>
-                        <span>${displayName}${isYou ? ' (You)' : ''}</span>
+                card.innerHTML = `
+                    <div class="lobby-header-row">
+                        <span class="lobby-id">${lobby.id}</span>
+                        <span class="lobby-status ${lobby.status}">
+                            ${lobby.status.toUpperCase()}
+                        </span>
                     </div>
-                    <span>${player.stake.toFixed(3)} ${gameState.token}</span>
+                    <div class="lobby-stats">
+                        <div class="stat-box">
+                            <div class="stat-label">Players</div>
+                            <div class="stat-value">${lobby.players}/${lobby.maxPlayers}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Total Pot</div>
+                            <div class="stat-value">${lobby.totalPot} ${lobby.token}</div>
+                        </div>
+                    </div>
+                    <button class="join-lobby-btn" ${lobby.status === 'full' ? 'disabled' : ''}>
+                        ${lobby.status === 'full' ? 'FULL' : 'JOIN BATTLE'}
+                    </button>
                 `;
-                playerList.appendChild(div);
+
+                grid.appendChild(card);
             });
         }
 
-        window.joinGame = function() {
-            const stakeInput = document.getElementById('stakeAmount');
-            gameState.stake = parseFloat(stakeInput.value) || 0.01;
+        window.createGame = function() {
+            gameState.stake = parseFloat(document.getElementById('stakeAmount').value) || 0.01;
+            gameState.currentLobby = {
+                id: 'LOBBY-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                players: 1,
+                maxPlayers: 10
+            };
+            startGame();
+        };
+
+        function joinLobby(lobby) {
+            gameState.stake = 0.01;
+            gameState.currentLobby = lobby;
+            startGame();
+        }
+
+        function startGame() {
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('gameHUD').classList.remove('hidden');
+            document.getElementById('crosshair').classList.remove('hidden');
+            document.getElementById('instructions').classList.remove('hidden');
+
             gameState.inGame = true;
             gameState.health = 100;
             gameState.collected = 0;
             gameState.kills = 0;
-
-            // Update player's stake
-            gameState.players.find(p => p.id === gameState.wallet).stake = gameState.stake;
-
-            document.getElementById('lobbyModal').classList.remove('visible');
-            document.getElementById('gameHUD').classList.add('visible');
-            document.getElementById('instructions').classList.add('visible');
 
             // Update HUD
             const displayWallet = gameState.isAI ?
                 '🤖 AI' :
                 gameState.wallet.substring(0, 6) + '...';
             document.getElementById('hudWallet').textContent = displayWallet;
-            document.getElementById('hudBalance').textContent = gameState.stake.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('hudStake').textContent = gameState.stake.toFixed(3) + ' ' + gameState.token;
             document.getElementById('hudCollected').textContent = '+0.00 ' + gameState.token;
-            document.getElementById('playersAlive').textContent = gameState.players.length;
 
             initGame();
-        };
+        }
 
         window.logout = function() {
-            if (gameState.inGame) {
-                const confirmExit = confirm('Exit game? You will keep any earnings collected so far.');
-                if (!confirmExit) return;
+            if (gameState.inGame && !confirm('Exit game? You will keep earnings collected.')) return;
 
-                // Graceful exit - keep earnings
-                const totalEarnings = gameState.stake + gameState.collected;
-                alert(`Disconnecting with ${totalEarnings.toFixed(3)} ${gameState.token}`);
-            }
-
-            // Reset
-            gameState.connected = false;
-            gameState.inGame = false;
-            gameState.wallet = null;
-
-            document.getElementById('lobbyModal').classList.remove('visible');
-            document.getElementById('gameHUD').classList.remove('visible');
-            document.getElementById('instructions').classList.remove('visible');
-            document.getElementById('winnerModal').classList.remove('visible');
-            document.getElementById('defeatedModal').classList.remove('visible');
-            document.getElementById('walletModal').classList.remove('hidden');
-
-            // Clean up scene if exists
-            if (scene) {
-                while(scene.children.length > 0){
-                    scene.remove(scene.children[0]);
-                }
-            }
+            location.reload();
         };
 
-        window.returnToLobby = function() {
+        window.returnToDashboard = function() {
             gameState.inGame = false;
             gameState.health = 100;
             gameState.collected = 0;
-            gameState.kills = 0;
 
-            document.getElementById('winnerModal').classList.remove('visible');
-            document.getElementById('defeatedModal').classList.remove('visible');
-            document.getElementById('gameHUD').classList.remove('visible');
-            document.getElementById('instructions').classList.remove('visible');
-            document.getElementById('lobbyModal').classList.add('visible');
+            document.getElementById('gameHUD').classList.add('hidden');
+            document.getElementById('crosshair').classList.add('hidden');
+            document.getElementById('instructions').classList.add('hidden');
+            document.getElementById('winnerModal').classList.add('hidden');
+            document.getElementById('defeatModal').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
 
-            // Clean up scene
+            // Cleanup scene
             if (scene) {
                 otherPlayers.forEach(p => scene.remove(p));
-                otherPlayers = [];
                 bullets.forEach(b => scene.remove(b));
-                bullets = [];
                 coins.forEach(c => scene.remove(c));
+                otherPlayers = [];
+                bullets = [];
                 coins = [];
             }
 
-            simulateLobbyPlayers();
+            simulateLobbies();
         };
 
-        // ==================== GAME INITIALIZATION ====================
-        let scene, camera, renderer, composer;
-        let playerGroup, playerMixer, playerModel;
-        let gun, muzzleFlash;
-        let bullets = [];
-        let otherPlayers = [];
-        let coins = [];
-        const clock = new THREE.Clock();
-
+        // ==================== GAME INIT ====================
         function initGame() {
-            // Scene
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
             scene.fog = new THREE.Fog(0x000000, 0, 100);
 
-            // Camera - third person
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 12, 20);
+            camera.position.set(0, 15, 25);
 
-            // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1345,222 +1224,154 @@
             // Post-processing
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
-            const bloomPass = new UnrealBloomPass(
-                new THREE.Vector2(window.innerWidth, window.innerHeight),
-                1.5, 0.4, 0.85
-            );
-            composer.addPass(bloomPass);
+            composer.addPass(new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85));
             const fxaaPass = new ShaderPass(FXAAShader);
-            const pixelRatio = renderer.getPixelRatio();
-            fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
-            fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
+            const pr = renderer.getPixelRatio();
+            fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pr);
+            fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pr);
             composer.addPass(fxaaPass);
 
             // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-            scene.add(ambientLight);
-
-            const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-            scene.add(hemisphereLight);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.6));
 
             const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
             mainLight.position.set(0, 80, 10);
             mainLight.castShadow = true;
-            mainLight.shadow.camera.left = -70;
-            mainLight.shadow.camera.right = 70;
-            mainLight.shadow.camera.top = 70;
-            mainLight.shadow.camera.bottom = -70;
-            mainLight.shadow.mapSize.width = 2048;
-            mainLight.shadow.mapSize.height = 2048;
+            mainLight.shadow.camera.set(-70, 70, 70, -70);
+            mainLight.shadow.mapSize.setScalar(2048);
             scene.add(mainLight);
 
-            // Corner lights
-            const corners = [
-                { pos: [40, 10, 40], color: 0xff00ff },
-                { pos: [-40, 10, -40], color: 0x00ffff },
-                { pos: [-40, 10, 40], color: 0xff3366 },
-                { pos: [40, 10, -40], color: 0x00ff88 }
-            ];
-            corners.forEach(c => {
-                const light = new THREE.PointLight(c.color, 3, 60);
-                light.position.set(...c.pos);
-                scene.add(light);
+            [[40,10,40,0xff00ff],[-40,10,-40,0x00ffff],[-40,10,40,0xff3366],[40,10,-40,0x00ff88]].forEach(([x,y,z,c]) => {
+                scene.add(Object.assign(new THREE.PointLight(c, 3, 60), {position: {x,y,z}}));
             });
 
-            // Create platform
             createPlatform();
-
-            // Load player
             loadPlayer();
-
-            // Spawn other players
             spawnOtherPlayers();
-
-            // Input
             setupInput();
 
-            // Start
-            document.getElementById('loading').classList.add('hidden');
+            clock = new THREE.Clock();
             animate();
         }
 
         function createPlatform() {
-            const platformRadius = 37.5;
+            const r = 37.5;
 
-            // Hexagonal platform texture
+            // Hexagonal texture
             const canvas = document.createElement('canvas');
-            canvas.width = 2048;
-            canvas.height = 2048;
+            canvas.width = canvas.height = 2048;
             const ctx = canvas.getContext('2d');
 
-            const bgGradient = ctx.createRadialGradient(1024, 1024, 0, 1024, 1024, 1024);
-            bgGradient.addColorStop(0, '#1a2a3a');
-            bgGradient.addColorStop(0.5, '#0f1520');
-            bgGradient.addColorStop(1, '#050a10');
-            ctx.fillStyle = bgGradient;
-            ctx.fillRect(0, 0, 2048, 2048);
+            const grad = ctx.createRadialGradient(1024,1024,0,1024,1024,1024);
+            grad.addColorStop(0,'#1a2a3a');
+            grad.addColorStop(0.5,'#0f1520');
+            grad.addColorStop(1,'#050a10');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0,0,2048,2048);
 
-            const hexSize = 60;
-            const hexHeight = hexSize * Math.sqrt(3);
-
-            for (let row = -2; row < 32; row++) {
-                for (let col = -2; col < 32; col++) {
-                    const x = col * hexSize * 1.5;
-                    const y = row * hexHeight + (col % 2) * (hexHeight / 2);
-
-                    ctx.strokeStyle = '#00d9ff';
-                    ctx.lineWidth = 2;
-                    ctx.globalAlpha = 0.6;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = '#00d9ff';
-
+            const hs = 60, hh = hs * Math.sqrt(3);
+            for(let row=-2; row<32; row++) {
+                for(let col=-2; col<32; col++) {
+                    const x = col*hs*1.5, y = row*hh + (col%2)*(hh/2);
+                    ctx.strokeStyle='#00d9ff';
+                    ctx.lineWidth=2;
+                    ctx.globalAlpha=0.6;
+                    ctx.shadowBlur=10;
+                    ctx.shadowColor='#00d9ff';
                     ctx.beginPath();
-                    for (let i = 0; i < 6; i++) {
-                        const angle = (Math.PI / 3) * i;
-                        const hx = x + Math.cos(angle) * hexSize;
-                        const hy = y + Math.sin(angle) * hexSize;
-                        if (i === 0) ctx.moveTo(hx, hy);
-                        else ctx.lineTo(hx, hy);
+                    for(let i=0;i<6;i++) {
+                        const a=(Math.PI/3)*i, hx=x+Math.cos(a)*hs, hy=y+Math.sin(a)*hs;
+                        i?ctx.lineTo(hx,hy):ctx.moveTo(hx,hy);
                     }
                     ctx.closePath();
                     ctx.stroke();
                 }
             }
 
-            const texture = new THREE.CanvasTexture(canvas);
-            const platformGeometry = new THREE.CircleGeometry(platformRadius, 64);
-            const platformMaterial = new THREE.MeshStandardMaterial({
-                map: texture,
-                roughness: 0.3,
-                metalness: 0.7,
-                emissive: new THREE.Color(0x002244),
-                emissiveMap: texture,
-                emissiveIntensity: 0.5
-            });
-
-            const platform = new THREE.Mesh(platformGeometry, platformMaterial);
-            platform.rotation.x = -Math.PI / 2;
+            const tex = new THREE.CanvasTexture(canvas);
+            const platform = new THREE.Mesh(
+                new THREE.CircleGeometry(r, 64),
+                new THREE.MeshStandardMaterial({
+                    map:tex, roughness:0.3, metalness:0.7,
+                    emissive:0x002244, emissiveMap:tex, emissiveIntensity:0.5
+                })
+            );
+            platform.rotation.x = -Math.PI/2;
             platform.receiveShadow = true;
             scene.add(platform);
 
             // Ring
-            const ringGeometry = new THREE.RingGeometry(platformRadius - 0.5, platformRadius + 0.5, 64);
-            const ringMaterial = new THREE.MeshStandardMaterial({
-                color: 0xff0000,
-                emissive: 0xff0000,
-                emissiveIntensity: 1.5,
-                transparent: true,
-                opacity: 0.8
-            });
-            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-            ring.rotation.x = -Math.PI / 2;
+            const ring = new THREE.Mesh(
+                new THREE.RingGeometry(r-0.5,r+0.5,64),
+                new THREE.MeshStandardMaterial({
+                    color:0xff0000, emissive:0xff0000, emissiveIntensity:1.5,
+                    transparent:true, opacity:0.8
+                })
+            );
+            ring.rotation.x = -Math.PI/2;
             ring.position.y = 0.1;
             scene.add(ring);
 
-            // Ring lights
-            for (let i = 0; i < 16; i++) {
-                const angle = (i / 16) * Math.PI * 2;
-                const x = Math.cos(angle) * platformRadius;
-                const z = Math.sin(angle) * platformRadius;
-                const light = new THREE.PointLight(0xff0000, 0.5, 10);
-                light.position.set(x, 0.5, z);
-                scene.add(light);
+            for(let i=0;i<16;i++) {
+                const a = (i/16)*Math.PI*2;
+                scene.add(Object.assign(new THREE.PointLight(0xff0000, 0.5, 10),
+                    {position:{x:Math.cos(a)*r, y:0.5, z:Math.sin(a)*r}}));
             }
 
             // Particles
-            const particleCount = 500;
-            const particleGeometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(particleCount * 3);
-
-            for (let i = 0; i < particleCount; i++) {
-                positions[i * 3] = (Math.random() - 0.5) * 80;
-                positions[i * 3 + 1] = Math.random() * 50;
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+            const pc = 500, pg = new THREE.BufferGeometry(), pos = new Float32Array(pc*3);
+            for(let i=0;i<pc;i++) {
+                pos[i*3] = (Math.random()-0.5)*80;
+                pos[i*3+1] = Math.random()*50;
+                pos[i*3+2] = (Math.random()-0.5)*80;
             }
-
-            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            const particleMaterial = new THREE.PointsMaterial({
-                color: 0xffffff,
-                size: 0.1,
-                transparent: true,
-                opacity: 0.6,
-                blending: THREE.AdditiveBlending
-            });
-
-            const particles = new THREE.Points(particleGeometry, particleMaterial);
-            scene.add(particles);
+            pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            scene.add(new THREE.Points(pg, new THREE.PointsMaterial({
+                color:0xffffff, size:0.1, transparent:true, opacity:0.6, blending:THREE.AdditiveBlending
+            })));
         }
 
         function loadPlayer() {
             playerGroup = new THREE.Group();
             scene.add(playerGroup);
 
-            const loader = new GLTFLoader();
-            loader.load(
+            new GLTFLoader().load(
                 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
-                (gltf) => {
+                gltf => {
                     playerModel = gltf.scene;
-                    playerModel.scale.set(0.75, 0.75, 0.75);
-
-                    // Apply color
-                    playerModel.traverse((child) => {
-                        if (child.isMesh && child.material) {
-                            child.material.color.setHex(gameState.robotColor);
-                            child.material.emissive.setHex(gameState.robotColor);
-                            child.material.emissiveIntensity = 0.3;
-                            child.castShadow = true;
-                            child.receiveShadow = true;
+                    playerModel.scale.setScalar(0.75);
+                    playerModel.traverse(c => {
+                        if(c.isMesh && c.material) {
+                            c.material.color.setHex(gameState.robotColor);
+                            c.material.emissive.setHex(gameState.robotColor);
+                            c.material.emissiveIntensity = 0.3;
+                            c.castShadow = c.receiveShadow = true;
                         }
                     });
-
                     playerGroup.add(playerModel);
 
-                    // Animations
-                    if (gltf.animations.length) {
+                    if(gltf.animations.length) {
                         playerMixer = new THREE.AnimationMixer(playerModel);
-                        const idleClip = THREE.AnimationClip.findByName(gltf.animations, 'Idle');
-                        if (idleClip) {
-                            const action = playerMixer.clipAction(idleClip);
-                            action.play();
-                        }
+                        const idle = THREE.AnimationClip.findByName(gltf.animations, 'Idle');
+                        if(idle) playerMixer.clipAction(idle).play();
                     }
 
                     createGun();
                 },
                 undefined,
                 () => {
-                    // Fallback
-                    const fallback = new THREE.Mesh(
-                        new THREE.CapsuleGeometry(0.5, 1.5),
+                    const fb = new THREE.Mesh(
+                        new THREE.CapsuleGeometry(0.5,1.5),
                         new THREE.MeshStandardMaterial({
-                            color: gameState.robotColor,
-                            emissive: gameState.robotColor,
-                            emissiveIntensity: 0.3
+                            color:gameState.robotColor,
+                            emissive:gameState.robotColor,
+                            emissiveIntensity:0.3
                         })
                     );
-                    fallback.position.y = 1;
-                    fallback.castShadow = true;
-                    playerGroup.add(fallback);
+                    fb.position.y = 1;
+                    fb.castShadow = true;
+                    playerGroup.add(fb);
                     createGun();
                 }
             );
@@ -1569,337 +1380,259 @@
         function createGun() {
             gun = new THREE.Group();
 
-            // Improved gun model
-            // Main body
             const body = new THREE.Mesh(
-                new THREE.BoxGeometry(0.2, 0.15, 0.6),
-                new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.3 })
+                new THREE.BoxGeometry(0.2,0.15,0.6),
+                new THREE.MeshStandardMaterial({color:0x222222, metalness:0.8, roughness:0.3})
             );
             body.position.z = -0.2;
             gun.add(body);
 
-            // Barrel
             const barrel = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.04, 0.04, 0.8, 8),
-                new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.9, roughness: 0.2 })
+                new THREE.CylinderGeometry(0.04,0.04,0.8,8),
+                new THREE.MeshStandardMaterial({color:0x333333, metalness:0.9, roughness:0.2})
             );
-            barrel.rotation.z = Math.PI / 2;
-            barrel.position.set(0.4, 0.05, -0.2);
+            barrel.rotation.z = Math.PI/2;
+            barrel.position.set(0.4,0.05,-0.2);
             gun.add(barrel);
 
-            // Handle
             const handle = new THREE.Mesh(
-                new THREE.BoxGeometry(0.12, 0.35, 0.2),
-                new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.7 })
+                new THREE.BoxGeometry(0.12,0.35,0.2),
+                new THREE.MeshStandardMaterial({color:0x1a1a1a, roughness:0.7})
             );
-            handle.position.set(0, -0.2, 0);
+            handle.position.set(0,-0.2,0);
             gun.add(handle);
 
-            // Muzzle flash (hidden initially)
             muzzleFlash = new THREE.Mesh(
-                new THREE.PlaneGeometry(0.3, 0.3),
+                new THREE.PlaneGeometry(0.3,0.3),
                 new THREE.MeshBasicMaterial({
-                    color: 0xffff00,
-                    transparent: true,
-                    opacity: 0,
-                    blending: THREE.AdditiveBlending
+                    color:0xffff00, transparent:true, opacity:0, blending:THREE.AdditiveBlending
                 })
             );
-            muzzleFlash.position.set(0.8, 0.05, -0.2);
+            muzzleFlash.position.set(0.8,0.05,-0.2);
             gun.add(muzzleFlash);
 
-            gun.position.set(0.4, 0.8, -0.5);
-            gun.rotation.y = Math.PI / 2;
+            gun.position.set(0.4,0.8,-0.5);
+            gun.rotation.y = Math.PI/2;
             playerGroup.add(gun);
         }
 
         function spawnOtherPlayers() {
-            gameState.players.forEach((player, index) => {
-                if (player.id === gameState.wallet) return;
+            const playerCount = Math.min(9, Math.floor(Math.random()*6)+3);
+            const colors = [0x00ffff,0xff00ff,0x00ff00,0xffff00,0xff6600,0xff0000,0x0000ff,0xffffff,0xff1493,0x9370db];
 
-                const angle = (index / gameState.players.length) * Math.PI * 2;
-                const radius = 25;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
-
+            for(let i=0; i<playerCount; i++) {
+                const angle = (i/playerCount)*Math.PI*2, r = 25;
                 const otherPlayer = new THREE.Group();
+
                 const body = new THREE.Mesh(
-                    new THREE.CapsuleGeometry(0.5, 1.5),
+                    new THREE.CapsuleGeometry(0.5,1.5),
                     new THREE.MeshStandardMaterial({
-                        color: player.color,
-                        emissive: player.color,
-                        emissiveIntensity: 0.3
+                        color:colors[i%colors.length],
+                        emissive:colors[i%colors.length],
+                        emissiveIntensity:0.3
                     })
                 );
                 body.position.y = 1;
                 body.castShadow = true;
                 otherPlayer.add(body);
 
-                // Name label
-                const canvas = document.createElement('canvas');
-                canvas.width = 256;
-                canvas.height = 64;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 32px Arial';
-                ctx.textAlign = 'center';
-                const name = player.isAI ? '🤖 ' + player.id.substring(0, 8) : player.wallet.substring(0, 8);
-                ctx.fillText(name, 128, 40);
-
-                const texture = new THREE.CanvasTexture(canvas);
-                const label = new THREE.Mesh(
-                    new THREE.PlaneGeometry(2, 0.5),
-                    new THREE.MeshBasicMaterial({ map: texture, transparent: true })
-                );
-                label.position.y = 3;
-                otherPlayer.add(label);
-
                 // Health bar
-                const healthBarBg = new THREE.Mesh(
-                    new THREE.PlaneGeometry(1.5, 0.15),
-                    new THREE.MeshBasicMaterial({ color: 0x330000 })
+                const hbg = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.5,0.15),
+                    new THREE.MeshBasicMaterial({color:0x330000})
                 );
-                healthBarBg.position.y = 2.5;
-                otherPlayer.add(healthBarBg);
+                hbg.position.y = 2.5;
+                otherPlayer.add(hbg);
 
-                const healthBarFg = new THREE.Mesh(
-                    new THREE.PlaneGeometry(1.5, 0.15),
-                    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+                const hfg = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.5,0.15),
+                    new THREE.MeshBasicMaterial({color:0x00ff00})
                 );
-                healthBarFg.position.y = 2.5;
-                healthBarFg.position.z = 0.01;
-                otherPlayer.add(healthBarFg);
+                hfg.position.set(0,2.5,0.01);
+                otherPlayer.add(hfg);
 
-                otherPlayer.position.set(x, 0, z);
+                otherPlayer.position.set(Math.cos(angle)*r, 0, Math.sin(angle)*r);
                 otherPlayer.userData = {
-                    id: player.id,
+                    id: 'Player-'+i,
                     health: 100,
                     maxHealth: 100,
-                    isAI: player.isAI,
-                    stake: player.stake,
-                    healthBar: healthBarFg,
-                    moveTimer: 0
+                    healthBar: hfg,
+                    stake: 0.01,
+                    isAI: Math.random()>0.4
                 };
 
                 scene.add(otherPlayer);
                 otherPlayers.push(otherPlayer);
-            });
+            }
+
+            document.getElementById('playersAlive').textContent = otherPlayers.length + 1;
         }
 
         // ==================== INPUT ====================
-        const keys = { w: false, a: false, s: false, d: false, shift: false };
-        const moveSpeed = 0.2;
-        let mouseDown = false;
-        let shootCooldown = 0;
-        let mouseX = 0, mouseY = 0;
-
         function setupInput() {
-            document.addEventListener('keydown', (e) => {
-                const key = e.key.toLowerCase();
-                if (keys.hasOwnProperty(key)) keys[key] = true;
-                if (e.key === 'Shift') keys.shift = true;
-                if (e.key === 'Escape') {
-                    if (document.pointerLockElement) {
-                        document.exitPointerLock();
-                    }
-                }
+            document.addEventListener('keydown', e => {
+                const k = e.key.toLowerCase();
+                if(keys.hasOwnProperty(k)) keys[k]=true;
+                if(e.key==='Shift') keys.shift=true;
+                if(e.key==='Escape' && document.pointerLockElement) document.exitPointerLock();
             });
 
-            document.addEventListener('keyup', (e) => {
-                const key = e.key.toLowerCase();
-                if (keys.hasOwnProperty(key)) keys[key] = false;
-                if (e.key === 'Shift') keys.shift = false;
+            document.addEventListener('keyup', e => {
+                const k = e.key.toLowerCase();
+                if(keys.hasOwnProperty(k)) keys[k]=false;
+                if(e.key==='Shift') keys.shift=false;
             });
 
-            document.addEventListener('mousedown', () => { mouseDown = true; });
-            document.addEventListener('mouseup', () => { mouseDown = false; });
+            document.addEventListener('mousedown', () => mouseDown=true);
+            document.addEventListener('mouseup', () => mouseDown=false);
 
             document.addEventListener('click', () => {
-                if (gameState.inGame && !document.pointerLockElement) {
+                if(gameState.inGame && !document.pointerLockElement) {
                     document.body.requestPointerLock();
                 }
             });
 
-            document.addEventListener('mousemove', (e) => {
-                if (document.pointerLockElement) {
+            document.addEventListener('mousemove', e => {
+                if(document.pointerLockElement) {
                     mouseX += e.movementX * 0.002;
                     mouseY -= e.movementY * 0.002;
                     mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, mouseY));
-                }
-            });
-
-            // Handle tab close
-            window.addEventListener('beforeunload', (e) => {
-                if (gameState.inGame && gameState.connected) {
-                    // Player dies if they close tab without logging out
-                    e.preventDefault();
-                    e.returnValue = 'If you leave, you will die and drop your coins!';
                 }
             });
         }
 
         // ==================== SHOOTING ====================
         function shoot() {
-            if (gameState.ammo <= 0 || shootCooldown > 0) return;
+            if(gameState.ammo<=0 || shootCooldown>0) return;
 
             gameState.ammo--;
-            shootCooldown = 5; // 200ms between shots
+            shootCooldown = 5;
             document.getElementById('ammoCount').textContent = gameState.ammo;
 
-            // Muzzle flash
-            if (muzzleFlash) {
+            if(muzzleFlash) {
                 muzzleFlash.material.opacity = 1;
-                setTimeout(() => {
-                    if (muzzleFlash) muzzleFlash.material.opacity = 0;
-                }, 50);
+                setTimeout(() => muzzleFlash && (muzzleFlash.material.opacity=0), 50);
             }
 
-            // Reload
-            if (gameState.ammo === 0) {
+            if(gameState.ammo===0) {
                 setTimeout(() => {
                     gameState.ammo = gameState.maxAmmo;
                     document.getElementById('ammoCount').textContent = gameState.ammo;
                 }, 1500);
             }
 
-            // Create bullet
             const bullet = new THREE.Mesh(
                 new THREE.SphereGeometry(0.1),
-                new THREE.MeshBasicMaterial({ color: 0xffff00 })
+                new THREE.MeshBasicMaterial({color:0xffff00})
             );
 
             bullet.position.copy(playerGroup.position);
             bullet.position.y += 1.5;
 
-            const direction = new THREE.Vector3(
-                Math.sin(mouseX),
-                Math.sin(mouseY),
-                -Math.cos(mouseX)
-            ).normalize();
-
-            bullet.userData.velocity = direction.multiplyScalar(3);
+            const dir = new THREE.Vector3(Math.sin(mouseX), Math.sin(mouseY), -Math.cos(mouseX)).normalize();
+            bullet.userData.velocity = dir.multiplyScalar(3);
             bullet.userData.life = 60;
 
             scene.add(bullet);
             bullets.push(bullet);
 
-            // Check hits
-            setTimeout(() => checkBulletHits(bullet), 10);
+            setTimeout(() => checkHit(bullet), 10);
         }
 
-        function checkBulletHits(bullet) {
-            otherPlayers.forEach(player => {
-                if (player.userData.health <= 0) return;
+        function checkHit(bullet) {
+            otherPlayers.forEach(p => {
+                if(p.userData.health<=0) return;
 
-                const dist = bullet.position.distanceTo(player.position);
-                if (dist < 2) {
-                    // Hit!
-                    player.userData.health -= 10;
+                if(bullet.position.distanceTo(p.position) < 2) {
+                    p.userData.health -= 10;
 
-                    // Update health bar
-                    const healthPercent = player.userData.health / player.userData.maxHealth;
-                    player.userData.healthBar.scale.x = healthPercent;
-                    player.userData.healthBar.position.x = -(1.5 * (1 - healthPercent)) / 2;
+                    const hp = p.userData.health / p.userData.maxHealth;
+                    p.userData.healthBar.scale.x = hp;
+                    p.userData.healthBar.position.x = -(1.5*(1-hp))/2;
 
-                    if (player.userData.health <= 0) {
-                        // Killed!
+                    if(p.userData.health <= 0) {
                         gameState.kills++;
-                        killPlayer(player);
+                        addKillFeed(`You eliminated ${p.userData.id}`);
+                        dropCoins(p);
+                        p.visible = false;
+
+                        const alive = otherPlayers.filter(p => p.userData.health>0).length + 1;
+                        document.getElementById('playersAlive').textContent = alive;
+
+                        if(alive === 1) setTimeout(() => showVictory(), 1000);
                     }
                 }
             });
         }
 
-        function killPlayer(player) {
-            addKillFeed(`You eliminated ${player.userData.id.substring(0, 12)}`);
-
-            // Drop coins
-            dropCoins(player);
-
-            // Remove player
-            player.visible = false;
-
-            // Update alive count
-            const alive = otherPlayers.filter(p => p.userData.health > 0).length + 1;
-            document.getElementById('playersAlive').textContent = alive;
-
-            if (alive === 1) {
-                // Victory!
-                setTimeout(() => showVictory(), 1000);
-            }
-        }
-
         function dropCoins(player) {
-            const coinGroup = new THREE.Group();
-
-            const coinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.15, 16);
-            const coinMat = new THREE.MeshStandardMaterial({
-                color: 0xffd700,
-                emissive: 0xffaa00,
-                emissiveIntensity: 0.8,
-                metalness: 1,
-                roughness: 0.2
-            });
-            const coin = new THREE.Mesh(coinGeo, coinMat);
-            coin.rotation.x = Math.PI / 2;
-            coinGroup.add(coin);
+            const cg = new THREE.Group();
+            const coin = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.6,0.6,0.15,16),
+                new THREE.MeshStandardMaterial({
+                    color:0xffd700, emissive:0xffaa00, emissiveIntensity:0.8,
+                    metalness:1, roughness:0.2
+                })
+            );
+            coin.rotation.x = Math.PI/2;
+            cg.add(coin);
 
             const light = new THREE.PointLight(0xffd700, 3, 15);
             light.position.y = 1;
-            coinGroup.add(light);
+            cg.add(light);
 
-            coinGroup.position.copy(player.position);
-            coinGroup.position.y = 0.5;
-            coinGroup.userData = {
+            cg.position.copy(player.position);
+            cg.position.y = 0.5;
+            cg.userData = {
                 playerId: player.userData.id,
                 amount: player.userData.stake,
                 collected: false
             };
 
-            scene.add(coinGroup);
-            coins.push(coinGroup);
+            scene.add(cg);
+            coins.push(cg);
         }
 
         function checkCoinCollection() {
             coins.forEach(coin => {
-                if (coin.userData.collected) return;
+                if(coin.userData.collected) return;
 
                 const dist = playerGroup.position.distanceTo(coin.position);
-                if (dist < 4) {
-                    if (!gameState.nearbyCoins || gameState.nearbyCoins !== coin) {
+                if(dist < 4) {
+                    if(!gameState.nearbyCoins || gameState.nearbyCoins !== coin) {
                         gameState.nearbyCoins = coin;
-                        const info = `${coin.userData.playerId.substring(0, 12)}... | ${coin.userData.amount.toFixed(3)} ${gameState.token}`;
+                        const info = `${coin.userData.playerId} | ${coin.userData.amount.toFixed(3)} ${gameState.token}`;
                         document.getElementById('coinInfo').textContent = info;
-                        document.getElementById('coinPopup').classList.add('visible');
+                        document.getElementById('coinPopup').classList.remove('hidden');
                     }
                 } else {
-                    if (gameState.nearbyCoins === coin) {
+                    if(gameState.nearbyCoins === coin) {
                         gameState.nearbyCoins = null;
-                        document.getElementById('coinPopup').classList.remove('visible');
+                        document.getElementById('coinPopup').classList.add('hidden');
                     }
                 }
             });
         }
 
         window.collectCoins = function() {
-            if (gameState.nearbyCoins) {
+            if(gameState.nearbyCoins) {
                 gameState.collected += gameState.nearbyCoins.userData.amount;
                 gameState.nearbyCoins.userData.collected = true;
                 scene.remove(gameState.nearbyCoins);
 
-                document.getElementById('coinPopup').classList.remove('visible');
-                document.getElementById('hudCollected').textContent = '+' + gameState.collected.toFixed(3) + ' ' + gameState.token;
+                document.getElementById('coinPopup').classList.add('hidden');
+                document.getElementById('hudCollected').textContent =
+                    '+' + gameState.collected.toFixed(3) + ' ' + gameState.token;
 
                 gameState.nearbyCoins = null;
             }
         };
 
-        function addKillFeed(message) {
+        function addKillFeed(msg) {
             const div = document.createElement('div');
-            div.className = 'kill-message';
-            div.textContent = message;
+            div.className = 'kill-msg';
+            div.textContent = msg;
             document.getElementById('killFeed').appendChild(div);
-
             setTimeout(() => div.remove(), 5000);
         }
 
@@ -1907,145 +1640,118 @@
         function showVictory() {
             gameState.inGame = false;
 
-            const totalPot = gameState.players.reduce((sum, p) => sum + p.stake, 0);
-            const platformFee = totalPot * 0.05;
-            const totalWinnings = totalPot - platformFee;
-            const netWinnings = totalWinnings - gameState.stake;
+            const totalPot = otherPlayers.reduce((s,p) => s+p.userData.stake, 0) + gameState.stake;
+            const fee = totalPot * 0.05;
+            const totalWin = totalPot - fee;
+            const netProfit = totalWin - gameState.stake;
 
-            document.getElementById('totalWinnings').textContent = totalWinnings.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('totalWinnings').textContent = totalWin.toFixed(3) + ' ' + gameState.token;
             document.getElementById('yourStake').textContent = gameState.stake.toFixed(3) + ' ' + gameState.token;
-            document.getElementById('collected').textContent = gameState.collected.toFixed(3) + ' ' + gameState.token;
-            document.getElementById('platformFee').textContent = platformFee.toFixed(3) + ' ' + gameState.token;
-            document.getElementById('netWinnings').textContent = netWinnings.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('collectedAmount').textContent = gameState.collected.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('platformFee').textContent = fee.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('netProfit').textContent = netProfit.toFixed(3) + ' ' + gameState.token;
 
-            document.getElementById('winnerModal').classList.add('visible');
-            document.getElementById('instructions').classList.remove('visible');
+            document.getElementById('winnerModal').classList.remove('hidden');
+            document.getElementById('crosshair').classList.add('hidden');
+            document.getElementById('instructions').classList.add('hidden');
         }
 
-        function showDefeat() {
-            gameState.inGame = false;
-
-            document.getElementById('defeatMessage').textContent =
-                `Lost ${gameState.stake.toFixed(3)} ${gameState.token} | Collected ${gameState.collected.toFixed(3)} ${gameState.token}`;
-
-            document.getElementById('defeatedModal').classList.add('visible');
-            document.getElementById('instructions').classList.remove('visible');
-        }
-
-        // ==================== ANIMATION LOOP ====================
+        // ==================== ANIMATION ====================
         function animate() {
             requestAnimationFrame(animate);
-
-            if (!gameState.inGame || !scene) return;
+            if(!gameState.inGame || !scene) return;
 
             const delta = clock.getDelta();
+            if(playerMixer) playerMixer.update(delta);
 
-            if (playerMixer) playerMixer.update(delta);
+            // Movement
+            const vel = new THREE.Vector3();
+            const spd = keys.shift ? moveSpeed*1.5 : moveSpeed;
 
-            // Player movement
-            const velocity = new THREE.Vector3();
-            const speed = keys.shift ? moveSpeed * 1.5 : moveSpeed;
+            if(keys.w) vel.z -= spd;
+            if(keys.s) vel.z += spd;
+            if(keys.a) vel.x -= spd;
+            if(keys.d) vel.x += spd;
 
-            if (keys.w) velocity.z -= speed;
-            if (keys.s) velocity.z += speed;
-            if (keys.a) velocity.x -= speed;
-            if (keys.d) velocity.x += speed;
+            if(vel.length() > 0) {
+                vel.applyEuler(new THREE.Euler(0, mouseX, 0));
+                playerGroup.position.add(vel);
 
-            if (velocity.length() > 0) {
-                velocity.applyEuler(new THREE.Euler(0, mouseX, 0));
-                playerGroup.position.add(velocity);
-
-                // Keep in bounds
-                const dist = Math.sqrt(playerGroup.position.x ** 2 + playerGroup.position.z ** 2);
-                if (dist > 33) {
-                    const angle = Math.atan2(playerGroup.position.z, playerGroup.position.x);
-                    playerGroup.position.x = Math.cos(angle) * 33;
-                    playerGroup.position.z = Math.sin(angle) * 33;
+                const dist = Math.sqrt(playerGroup.position.x**2 + playerGroup.position.z**2);
+                if(dist > 33) {
+                    const a = Math.atan2(playerGroup.position.z, playerGroup.position.x);
+                    playerGroup.position.x = Math.cos(a)*33;
+                    playerGroup.position.z = Math.sin(a)*33;
                 }
             }
 
-            // Player rotation
-            if (playerModel) {
-                playerModel.rotation.y = mouseX + Math.PI;
-            }
+            if(playerModel) playerModel.rotation.y = mouseX + Math.PI;
 
             // Shooting
-            if (mouseDown && shootCooldown === 0) {
-                shoot();
-            }
-            if (shootCooldown > 0) shootCooldown--;
+            if(mouseDown && shootCooldown===0) shoot();
+            if(shootCooldown>0) shootCooldown--;
 
-            // Update bullets
-            bullets.forEach((bullet, index) => {
-                bullet.position.add(bullet.userData.velocity);
-                bullet.userData.life--;
-
-                if (bullet.userData.life <= 0) {
-                    scene.remove(bullet);
-                    bullets.splice(index, 1);
+            // Bullets
+            bullets.forEach((b,i) => {
+                b.position.add(b.userData.velocity);
+                if(--b.userData.life <= 0) {
+                    scene.remove(b);
+                    bullets.splice(i,1);
                 }
             });
 
-            // AI behavior
-            otherPlayers.forEach(player => {
-                if (player.userData.health <= 0 || !player.userData.isAI) return;
+            // AI movement
+            otherPlayers.forEach(p => {
+                if(p.userData.health<=0 || !p.userData.isAI) return;
+                if(Math.random()<0.01) {
+                    const a = Math.random()*Math.PI*2, s = 0.15;
+                    p.position.x += Math.cos(a)*s*30;
+                    p.position.z += Math.sin(a)*s*30;
 
-                player.userData.moveTimer++;
-                if (player.userData.moveTimer > 30) {
-                    player.userData.moveTimer = 0;
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = 0.15;
-                    player.position.x += Math.cos(angle) * speed * 30;
-                    player.position.z += Math.sin(angle) * speed * 30;
-
-                    // Keep in bounds
-                    const dist = Math.sqrt(player.position.x ** 2 + player.position.z ** 2);
-                    if (dist > 33) {
-                        const a = Math.atan2(player.position.z, player.position.x);
-                        player.position.x = Math.cos(a) * 33;
-                        player.position.z = Math.sin(a) * 33;
+                    const d = Math.sqrt(p.position.x**2 + p.position.z**2);
+                    if(d > 33) {
+                        const ang = Math.atan2(p.position.z, p.position.x);
+                        p.position.x = Math.cos(ang)*33;
+                        p.position.z = Math.sin(ang)*33;
                     }
                 }
 
-                // Make labels face camera
-                player.children.forEach(child => {
-                    if (child.geometry && child.geometry.type === 'PlaneGeometry') {
-                        child.lookAt(camera.position);
+                p.children.forEach(c => {
+                    if(c.geometry && c.geometry.type==='PlaneGeometry') {
+                        c.lookAt(camera.position);
                     }
                 });
             });
 
-            // Animate coins
-            coins.forEach(coin => {
-                if (!coin.userData.collected) {
-                    coin.position.y = 0.5 + Math.sin(Date.now() * 0.003) * 0.3;
-                    coin.rotation.y += 0.03;
+            // Coins
+            coins.forEach(c => {
+                if(!c.userData.collected) {
+                    c.position.y = 0.5 + Math.sin(Date.now()*0.003)*0.3;
+                    c.rotation.y += 0.03;
                 }
             });
 
-            // Check coin collection
             checkCoinCollection();
 
-            // Camera follows player (third person)
-            const cameraOffset = new THREE.Vector3(
-                Math.sin(mouseX) * 8,
-                5 + Math.sin(mouseY) * 3,
-                Math.cos(mouseX) * 8
+            // Camera
+            const camOff = new THREE.Vector3(
+                Math.sin(mouseX)*10,
+                6 + Math.sin(mouseY)*4,
+                Math.cos(mouseX)*10
             );
-            const cameraTarget = playerGroup.position.clone().add(cameraOffset);
-            camera.position.lerp(cameraTarget, 0.1);
-            camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.5, playerGroup.position.z);
+            const camTgt = playerGroup.position.clone().add(camOff);
+            camera.position.lerp(camTgt, 0.1);
+            camera.lookAt(playerGroup.position.x, playerGroup.position.y+1.5, playerGroup.position.z);
 
             composer.render();
         }
 
-        // Window resize
         window.addEventListener('resize', () => {
-            if (!camera || !renderer) return;
+            if(!camera || !renderer) return;
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            if (composer) composer.setSize(window.innerWidth, window.innerHeight);
+            if(composer) composer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
