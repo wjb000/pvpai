@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Battle Royale</title>
+    <title>PvP AI - Crypto Battle Royale</title>
     <style>
         * {
             margin: 0;
@@ -21,408 +21,9 @@
             height: 100vh;
         }
 
-        /* Wallet Connection Modal */
-        #walletModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-        #walletModal.hidden {
-            display: none;
-        }
-        .wallet-container {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 40px;
-            border-radius: 20px;
-            border: 3px solid #00ffff;
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.5);
-            max-width: 500px;
-            width: 90%;
-        }
-        .wallet-container h2 {
-            color: #00ffff;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-        .wallet-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .wallet-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .wallet-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        .wallet-btn.metamask {
-            background: linear-gradient(135deg, #f6851b, #e2761b);
-        }
-        .wallet-btn.phantom {
-            background: linear-gradient(135deg, #ab9ff2, #5b4cdb);
-        }
-        .wallet-btn.coinbase {
-            background: linear-gradient(135deg, #0052ff, #0041cc);
-        }
-        .ai-section {
-            border-top: 2px solid #00ffff;
-            padding-top: 20px;
-            margin-top: 20px;
-        }
-        .ai-section h3 {
-            color: #00ffff;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        #apiKeyInput {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #00ffff;
-            border-radius: 8px;
-            background: rgba(0, 255, 255, 0.1);
-            color: white;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        #apiKeyInput::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .info-text {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 12px;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        /* Lobby Modal */
-        #lobbyModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        #lobbyModal.visible {
-            display: flex;
-        }
-        .lobby-container {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 40px;
-            border-radius: 20px;
-            border: 3px solid #ffd700;
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
-            max-width: 600px;
-            width: 90%;
-        }
-        .lobby-container h2 {
-            color: #ffd700;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .stake-input-group {
-            margin-bottom: 30px;
-        }
-        .stake-input-group label {
-            color: white;
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        #stakeAmount {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #ffd700;
-            border-radius: 8px;
-            background: rgba(255, 215, 0, 0.1);
-            color: white;
-            font-size: 18px;
-            text-align: center;
-        }
-        .color-picker-section {
-            margin-bottom: 30px;
-        }
-        .color-options {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .color-option {
-            width: 100%;
-            aspect-ratio: 1;
-            border-radius: 8px;
-            border: 3px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .color-option:hover {
-            transform: scale(1.1);
-        }
-        .color-option.selected {
-            border-color: #ffd700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-        }
-        .players-waiting {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .players-waiting h3 {
-            color: #00ffff;
-            margin-bottom: 15px;
-        }
-        .player-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .player-item {
-            background: rgba(0, 255, 255, 0.1);
-            padding: 10px 15px;
-            border-radius: 8px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-        }
-        .player-item.ai {
-            background: rgba(255, 0, 255, 0.1);
-        }
-        #joinGameBtn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #00ff88, #00cc66);
-            border: none;
-            border-radius: 10px;
-            color: #000;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        #joinGameBtn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
-        }
-        #joinGameBtn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* HUD */
-        #gameHUD {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            display: none;
-        }
-        #gameHUD.visible {
-            display: block;
-        }
-        .hud-panel {
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px 20px;
-            border-radius: 10px;
-            border: 2px solid #00ffff;
-            color: white;
-            margin-bottom: 10px;
-            min-width: 250px;
-        }
-        .health-bar-container {
-            margin-top: 10px;
-        }
-        .health-bar {
-            width: 100%;
-            height: 25px;
-            background: rgba(255, 0, 0, 0.3);
-            border-radius: 5px;
-            overflow: hidden;
-            position: relative;
-        }
-        .health-bar-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #00ff88, #00cc66);
-            transition: width 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .health-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 0 5px black;
-            line-height: 25px;
-        }
-        .ammo-display {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffd700;
-            margin-top: 10px;
-        }
-        .players-alive {
-            color: #00ffff;
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        /* Coin Drop Popup */
-        #coinPopup {
-            position: fixed;
-            bottom: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 170, 0, 0.95));
-            border: 4px solid #ffd700;
-            border-radius: 15px;
-            padding: 20px 30px;
-            z-index: 1000;
-            display: none;
-            text-align: center;
-            min-width: 300px;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
-        }
-        #coinPopup.visible {
-            display: block;
-            animation: popupBounce 0.5s ease;
-        }
-        @keyframes popupBounce {
-            0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
-            50% { transform: translateX(-50%) scale(1.05); }
-            100% { transform: translateX(-50%) scale(1); opacity: 1; }
-        }
-        #coinPopup h3 {
-            color: #000;
-            margin-bottom: 10px;
-            font-size: 20px;
-        }
-        #coinPopup p {
-            color: #000;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        #coinPopup button {
-            background: linear-gradient(135deg, #fff, #ffe);
-            color: #000;
-            border: 3px solid #ffd700;
-            padding: 12px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        /* Winner Modal */
-        #winnerModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10001;
-        }
-        #winnerModal.visible {
-            display: flex;
-        }
-        .winner-container {
-            background: linear-gradient(135deg, #ffd700, #ffaa00);
-            padding: 60px;
-            border-radius: 20px;
-            border: 5px solid #fff;
-            box-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
-            text-align: center;
-        }
-        .winner-container h1 {
-            font-size: 48px;
-            color: #000;
-            margin-bottom: 20px;
-        }
-        .winner-container p {
-            font-size: 24px;
-            color: #000;
-            margin-bottom: 30px;
-        }
-        .winner-container button {
-            background: #000;
-            color: #ffd700;
-            border: none;
-            padding: 15px 40px;
-            font-size: 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* Crosshair */
-        #crosshair {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 30px;
-            height: 30px;
-            pointer-events: none;
-            z-index: 999;
-        }
-        .crosshair-line {
-            position: absolute;
-            background: rgba(255, 0, 0, 0.8);
-        }
-        .crosshair-line.h {
-            width: 20px;
-            height: 2px;
-            left: 5px;
-            top: 14px;
-        }
-        .crosshair-line.v {
-            width: 2px;
-            height: 20px;
-            left: 14px;
-            top: 5px;
-        }
-        .crosshair-center {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 0, 0, 0.8);
-            left: 13px;
-            top: 13px;
-            border-radius: 50%;
-        }
-
-        /* Loading */
+        /* Loading Screen */
         #loading {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -432,7 +33,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 10000;
             transition: opacity 0.5s;
         }
         #loading.hidden {
@@ -456,6 +57,780 @@
             font-size: 18px;
             letter-spacing: 2px;
         }
+
+        /* Wallet Connection Modal */
+        #walletModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        #walletModal.hidden {
+            display: none;
+        }
+        .wallet-container {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 50px;
+            border-radius: 20px;
+            border: 3px solid #00ffff;
+            box-shadow: 0 0 60px rgba(0, 255, 255, 0.6);
+            max-width: 600px;
+            width: 90%;
+        }
+        .wallet-container h1 {
+            color: #00ffff;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 36px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+        }
+        .wallet-container .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        /* Chain Selection */
+        .chain-selection {
+            margin-bottom: 30px;
+        }
+        .chain-selection h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .chain-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .chain-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .chain-option:hover {
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        .chain-option.selected {
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+        }
+        .chain-option .chain-name {
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .chain-option .chain-icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .wallet-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .wallet-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .wallet-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+        .wallet-btn.metamask {
+            background: linear-gradient(135deg, #f6851b, #e2761b);
+        }
+        .wallet-btn.phantom {
+            background: linear-gradient(135deg, #ab9ff2, #5b4cdb);
+        }
+        .wallet-btn.coinbase {
+            background: linear-gradient(135deg, #0052ff, #0041cc);
+        }
+
+        .ai-section {
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+            padding-top: 25px;
+            margin-top: 25px;
+        }
+        .ai-section h3 {
+            color: #ff00ff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        #apiKeyInput {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+            background: rgba(255, 0, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        #apiKeyInput::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .info-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            text-align: center;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+        .spectate-btn {
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+        }
+
+        /* Lobby Modal */
+        #lobbyModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            overflow-y: auto;
+        }
+        #lobbyModal.visible {
+            display: flex;
+        }
+        .lobby-container {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.6);
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .lobby-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .lobby-header h2 {
+            color: #ffd700;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .connected-wallet {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .connected-wallet .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .connected-wallet span {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .stake-input-group {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        .stake-input-group label {
+            color: white;
+            display: block;
+            margin-bottom: 12px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .stake-input-wrapper {
+            position: relative;
+        }
+        #stakeAmount {
+            width: 100%;
+            padding: 18px 60px 18px 20px;
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .token-label {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .color-picker-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        .color-picker-section label {
+            color: white;
+            display: block;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+        }
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+        .color-option {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .color-option.selected {
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px black;
+        }
+
+        .players-waiting {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+        }
+        .players-waiting h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .player-count {
+            font-size: 18px;
+        }
+        .player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .player-item {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        .player-item.ai {
+            background: rgba(255, 0, 255, 0.1);
+            border-color: rgba(255, 0, 255, 0.3);
+        }
+        .player-item.you {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+        }
+        .player-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .player-color-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .lobby-info {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        .lobby-info p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .lobby-info strong {
+            color: #ffd700;
+        }
+
+        #joinGameBtn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #joinGameBtn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(0, 255, 136, 0.5);
+        }
+        #joinGameBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            color: #ff6666;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        /* Game HUD */
+        #gameHUD {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        #gameHUD.visible {
+            display: block;
+        }
+        .hud-panel {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid #00ffff;
+            color: white;
+            margin-bottom: 12px;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
+        }
+        .hud-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .hud-label {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .hud-value {
+            color: #00ffff;
+            font-weight: bold;
+        }
+        .health-bar-container {
+            margin-top: 12px;
+        }
+        .health-bar {
+            width: 100%;
+            height: 28px;
+            background: rgba(255, 0, 0, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid rgba(255, 0, 0, 0.5);
+        }
+        .health-bar-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            transition: width 0.3s;
+        }
+        .health-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 5px black, 0 0 10px black;
+            line-height: 28px;
+            top: 0;
+        }
+        .ammo-display {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .players-alive-hud {
+            color: #00ffff;
+            font-size: 18px;
+            margin-top: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Crosshair */
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .crosshair-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 5px black;
+        }
+        .crosshair-line.h {
+            width: 25px;
+            height: 2px;
+            left: 7.5px;
+            top: 19px;
+        }
+        .crosshair-line.v {
+            width: 2px;
+            height: 25px;
+            left: 19px;
+            top: 7.5px;
+        }
+        .crosshair-center {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 0, 0, 0.9);
+            left: 18px;
+            top: 18px;
+            border-radius: 50%;
+            box-shadow: 0 0 5px black;
+        }
+
+        /* Kill Feed */
+        #killFeed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+        .kill-message {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 12px 18px;
+            border-radius: 8px;
+            border-left: 4px solid #ff0000;
+            color: white;
+            font-size: 14px;
+            animation: slideIn 0.3s ease, fadeOut 0.5s ease 4.5s forwards;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Coin Popup */
+        #coinPopup {
+            position: fixed;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 170, 0, 0.95));
+            border: 4px solid #ffd700;
+            border-radius: 15px;
+            padding: 20px 30px;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            min-width: 350px;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+        }
+        #coinPopup.visible {
+            display: block;
+            animation: popupBounce 0.5s ease;
+        }
+        @keyframes popupBounce {
+            0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+            50% { transform: translateX(-50%) scale(1.05); }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        #coinPopup h3 {
+            color: #000;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+        #coinPopup p {
+            color: #000;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        #coinPopup button {
+            background: #000;
+            color: #ffd700;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #coinPopup button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Winner Modal */
+        #winnerModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+        #winnerModal.visible {
+            display: flex;
+        }
+        .winner-container {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            padding: 60px;
+            border-radius: 20px;
+            border: 5px solid #fff;
+            box-shadow: 0 0 80px rgba(255, 215, 0, 0.9);
+            text-align: center;
+            animation: winnerAppear 0.6s ease;
+        }
+        @keyframes winnerAppear {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .winner-container h1 {
+            font-size: 52px;
+            color: #000;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        .winner-container .winnings {
+            font-size: 32px;
+            color: #000;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .winner-container .breakdown {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .winner-container .breakdown p {
+            color: #000;
+            margin: 8px 0;
+            font-size: 16px;
+        }
+        .winner-container button {
+            background: #000;
+            color: #ffd700;
+            border: none;
+            padding: 18px 50px;
+            font-size: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .winner-container button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Defeated Modal */
+        #defeatedModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+        #defeatedModal.visible {
+            display: flex;
+        }
+        .defeated-container {
+            background: linear-gradient(135deg, #8b0000, #ff0000);
+            padding: 60px;
+            border-radius: 20px;
+            border: 5px solid #fff;
+            box-shadow: 0 0 80px rgba(255, 0, 0, 0.8);
+            text-align: center;
+        }
+        .defeated-container h1 {
+            font-size: 48px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .defeated-container p {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+        .defeated-container button {
+            background: #fff;
+            color: #8b0000;
+            border: none;
+            padding: 18px 50px;
+            font-size: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        /* Instructions */
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px 30px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+        #instructions.visible {
+            display: block;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .wallet-container {
+                padding: 30px 20px;
+            }
+            .lobby-container {
+                padding: 25px 20px;
+            }
+            .color-options {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 8px;
+            }
+            .hud-panel {
+                min-width: 220px;
+                padding: 12px 15px;
+            }
+            #coinPopup {
+                min-width: 280px;
+                padding: 15px 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -468,7 +843,31 @@
     <!-- Wallet Connection Modal -->
     <div id="walletModal">
         <div class="wallet-container">
-            <h2>🎮 Connect to Play</h2>
+            <h1>PvP AI</h1>
+            <p class="subtitle">Crypto-Powered Battle Royale</p>
+
+            <div class="chain-selection">
+                <h3>Select Blockchain</h3>
+                <div class="chain-options">
+                    <div class="chain-option selected" data-chain="eth" data-token="ETH" onclick="selectChain(this)">
+                        <div class="chain-icon">⟠</div>
+                        <div class="chain-name">Ethereum</div>
+                    </div>
+                    <div class="chain-option" data-chain="sol" data-token="SOL" onclick="selectChain(this)">
+                        <div class="chain-icon">◎</div>
+                        <div class="chain-name">Solana</div>
+                    </div>
+                    <div class="chain-option" data-chain="base" data-token="ETH" onclick="selectChain(this)">
+                        <div class="chain-icon">🔵</div>
+                        <div class="chain-name">Base</div>
+                    </div>
+                    <div class="chain-option" data-chain="polygon" data-token="MATIC" onclick="selectChain(this)">
+                        <div class="chain-icon">🟣</div>
+                        <div class="chain-name">Polygon</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="wallet-buttons">
                 <button class="wallet-btn metamask" onclick="connectWallet('metamask')">
                     🦊 Connect MetaMask
@@ -483,30 +882,44 @@
 
             <div class="ai-section">
                 <h3>🤖 AI Player Mode</h3>
-                <input type="text" id="apiKeyInput" placeholder="Enter Claude/OpenAI API Key">
+                <input type="text" id="apiKeyInput" placeholder="Enter Claude or OpenAI API Key">
                 <button class="wallet-btn" onclick="connectAsAI()">
-                    Join as AI Player
+                    Join as AI Bot
                 </button>
-                <p class="info-text">AI players use your API key to make decisions autonomously</p>
+                <p class="info-text">AI bots play autonomously using your API key</p>
             </div>
 
-            <p class="info-text">Or spectate without connecting</p>
+            <button class="wallet-btn spectate-btn" onclick="spectateMode()">
+                👁️ Spectate (No Wallet Required)
+            </button>
+
+            <p class="info-text">
+                ⚠️ PROTOTYPE: Simulated multiplayer. Real production requires backend server.
+            </p>
         </div>
     </div>
 
     <!-- Lobby Modal -->
     <div id="lobbyModal">
         <div class="lobby-container">
-            <h2>💰 Game Lobby</h2>
+            <div class="lobby-header">
+                <h2>⚔️ Battle Lobby</h2>
+                <div class="connected-wallet">
+                    <div class="status-dot"></div>
+                    <span id="connectedStatus">Loading...</span>
+                </div>
+            </div>
 
             <div class="stake-input-group">
-                <label for="stakeAmount">Enter Stake Amount (ETH/SOL)</label>
-                <input type="number" id="stakeAmount" placeholder="0.01" step="0.001" min="0.001" value="0.01">
-                <p class="info-text">Platform fee: 5% of total pot</p>
+                <label for="stakeAmount">Stake Amount</label>
+                <div class="stake-input-wrapper">
+                    <input type="number" id="stakeAmount" placeholder="0.01" step="0.001" min="0.001" value="0.01">
+                    <span class="token-label" id="tokenLabel">ETH</span>
+                </div>
             </div>
 
             <div class="color-picker-section">
-                <label>Choose Robot Color</label>
+                <label>🎨 Choose Your Robot Color</label>
                 <div class="color-options">
                     <div class="color-option selected" style="background: #00ffff" data-color="0x00ffff" onclick="selectColor(this)"></div>
                     <div class="color-option" style="background: #ff00ff" data-color="0xff00ff" onclick="selectColor(this)"></div>
@@ -522,29 +935,58 @@
             </div>
 
             <div class="players-waiting">
-                <h3>Players Waiting (<span id="playerCount">0</span>/10)</h3>
+                <h3>
+                    <span>Players in Lobby</span>
+                    <span class="player-count"><span id="playerCount">0</span>/10</span>
+                </h3>
                 <div class="player-list" id="playerList"></div>
             </div>
 
-            <button id="joinGameBtn" onclick="joinGame()">JOIN BATTLE</button>
-            <p class="info-text">Game starts with 2+ players (max 10)</p>
+            <div class="lobby-info">
+                <p><strong>Game Rules:</strong></p>
+                <p>• 2-10 players per match</p>
+                <p>• Last player standing wins the pot</p>
+                <p>• Platform fee: <strong>5%</strong></p>
+                <p>• Exit early = keep earnings, close tab = death</p>
+            </div>
+
+            <button id="joinGameBtn" onclick="joinGame()">
+                ⚔️ Join Battle
+            </button>
+
+            <button class="logout-btn" onclick="logout()">
+                🚪 Disconnect Wallet
+            </button>
         </div>
     </div>
 
     <!-- Game HUD -->
     <div id="gameHUD">
         <div class="hud-panel">
-            <div><strong>Wallet:</strong> <span id="walletAddress">Not Connected</span></div>
-            <div><strong>Balance:</strong> <span id="balance">0.00 ETH</span></div>
-            <div><strong>Stake:</strong> <span id="stakeDisplay">0.00 ETH</span></div>
+            <div class="hud-row">
+                <span class="hud-label">Wallet:</span>
+                <span class="hud-value" id="hudWallet">---</span>
+            </div>
+            <div class="hud-row">
+                <span class="hud-label">Balance:</span>
+                <span class="hud-value" id="hudBalance">0.00</span>
+            </div>
+            <div class="hud-row">
+                <span class="hud-label">Collected:</span>
+                <span class="hud-value" id="hudCollected">+0.00</span>
+            </div>
             <div class="health-bar-container">
                 <div class="health-bar">
                     <div class="health-bar-fill" id="healthBar" style="width: 100%"></div>
                     <div class="health-text" id="healthText">100 / 100 HP</div>
                 </div>
             </div>
-            <div class="ammo-display">🔫 <span id="ammoCount">30</span> / ∞</div>
-            <div class="players-alive">👥 <span id="playersAlive">10</span> players alive</div>
+            <div class="ammo-display">
+                🔫 <span id="ammoCount">30</span> / ∞
+            </div>
+            <div class="players-alive-hud">
+                👥 <span id="playersAlive">10</span> alive
+            </div>
         </div>
     </div>
 
@@ -555,9 +997,12 @@
         <div class="crosshair-center"></div>
     </div>
 
-    <!-- Coin Drop Popup -->
+    <!-- Kill Feed -->
+    <div id="killFeed"></div>
+
+    <!-- Coin Popup -->
     <div id="coinPopup">
-        <h3>💰 Dropped Coins!</h3>
+        <h3>💰 Coins Dropped!</h3>
         <p id="coinInfo">Player: 0x123... | Amount: 0.05 ETH</p>
         <button onclick="collectCoins()">COLLECT</button>
     </div>
@@ -565,10 +1010,33 @@
     <!-- Winner Modal -->
     <div id="winnerModal">
         <div class="winner-container">
-            <h1>🏆 VICTORY! 🏆</h1>
-            <p id="winnerText">You won 0.45 ETH!</p>
+            <h1>🏆 VICTORY ROYALE! 🏆</h1>
+            <div class="winnings" id="totalWinnings">0.00 ETH</div>
+            <div class="breakdown">
+                <p><strong>Breakdown:</strong></p>
+                <p>Your Stake: <span id="yourStake">0.00 ETH</span></p>
+                <p>Eliminated Players: <span id="collected">0.00 ETH</span></p>
+                <p>Platform Fee (5%): <span id="platformFee">0.00 ETH</span></p>
+                <p><strong>Net Winnings: <span id="netWinnings">0.00 ETH</span></strong></p>
+            </div>
+            <button onclick="returnToLobby()">Return to Lobby</button>
+            <button onclick="logout()">Disconnect & Exit</button>
+        </div>
+    </div>
+
+    <!-- Defeated Modal -->
+    <div id="defeatedModal">
+        <div class="defeated-container">
+            <h1>💀 DEFEATED 💀</h1>
+            <p id="defeatMessage">You were eliminated!</p>
+            <p>Better luck next time!</p>
             <button onclick="returnToLobby()">Return to Lobby</button>
         </div>
+    </div>
+
+    <!-- Instructions -->
+    <div id="instructions">
+        <strong>WASD</strong> Move | <strong>Mouse</strong> Look | <strong>Click</strong> Shoot | <strong>ESC</strong> Menu
     </div>
 
     <script type="importmap">
@@ -586,127 +1054,149 @@
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
         // ==================== GAME STATE ====================
         const gameState = {
             connected: false,
+            spectating: false,
             isAI: false,
             wallet: null,
+            chain: 'eth',
+            token: 'ETH',
             apiKey: null,
-            inLobby: false,
             inGame: false,
             players: [],
-            localPlayer: null,
             health: 100,
             maxHealth: 100,
             ammo: 30,
             maxAmmo: 30,
             stake: 0.01,
-            collectedCoins: 0,
-            nearbyCoins: null,
-            robotColor: 0x00ffff
+            collected: 0,
+            robotColor: 0x00ffff,
+            kills: 0,
+            nearbyCoins: null
         };
 
-        // ==================== COLOR SELECTION ====================
-        window.selectColor = function(element) {
-            // Remove selected from all
-            document.querySelectorAll('.color-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-            // Add selected to clicked
+        // ==================== CHAIN SELECTION ====================
+        window.selectChain = function(element) {
+            document.querySelectorAll('.chain-option').forEach(el => el.classList.remove('selected'));
             element.classList.add('selected');
-            // Store color
-            gameState.robotColor = parseInt(element.getAttribute('data-color'));
+            gameState.chain = element.getAttribute('data-chain');
+            gameState.token = element.getAttribute('data-token');
         };
 
         // ==================== WALLET CONNECTION ====================
         window.connectWallet = async function(walletType) {
-            console.log(`Connecting to ${walletType}...`);
+            console.log(`Connecting ${walletType} on ${gameState.chain}...`);
 
             try {
-                let accounts;
-                if (walletType === 'metamask') {
+                let wallet;
+
+                if (walletType === 'metamask' && gameState.chain !== 'sol') {
                     if (typeof window.ethereum !== 'undefined') {
-                        accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                        gameState.wallet = accounts[0];
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        wallet = accounts[0];
+
+                        // Check if correct chain
+                        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                        console.log('Connected to chain:', chainId);
                     } else {
-                        alert('MetaMask not installed! This is a demo - proceeding with mock wallet.');
-                        gameState.wallet = '0x' + Math.random().toString(36).substring(2, 15);
+                        wallet = '0x' + Math.random().toString(36).substring(2, 42);
                     }
-                } else if (walletType === 'phantom') {
+                } else if (walletType === 'phantom' && gameState.chain === 'sol') {
                     if (window.solana && window.solana.isPhantom) {
                         const resp = await window.solana.connect();
-                        gameState.wallet = resp.publicKey.toString();
+                        wallet = resp.publicKey.toString();
                     } else {
-                        alert('Phantom not installed! This is a demo - proceeding with mock wallet.');
-                        gameState.wallet = 'Sol' + Math.random().toString(36).substring(2, 15);
+                        wallet = Math.random().toString(36).substring(2, 44);
                     }
                 } else {
                     // Mock wallet for demo
-                    gameState.wallet = '0x' + Math.random().toString(36).substring(2, 15);
+                    wallet = (gameState.chain === 'sol' ? '' : '0x') + Math.random().toString(36).substring(2, 42);
                 }
 
+                gameState.wallet = wallet;
                 gameState.connected = true;
                 gameState.isAI = false;
 
-                // Update HUD
-                document.getElementById('walletAddress').textContent =
-                    gameState.wallet.substring(0, 6) + '...' + gameState.wallet.substring(gameState.wallet.length - 4);
-
-                // Hide wallet modal, show lobby
-                document.getElementById('walletModal').classList.add('hidden');
-                document.getElementById('lobbyModal').classList.add('visible');
-
-                // Simulate other players in lobby
-                simulateLobbyPlayers();
+                proceedToLobby();
 
             } catch (error) {
-                console.error('Wallet connection error:', error);
+                console.error('Connection error:', error);
                 alert('Connection failed. Using demo mode.');
-                gameState.wallet = '0x' + Math.random().toString(36).substring(2, 15);
+                gameState.wallet = '0x' + Math.random().toString(36).substring(2, 42);
                 gameState.connected = true;
-                document.getElementById('walletModal').classList.add('hidden');
-                document.getElementById('lobbyModal').classList.add('visible');
-                simulateLobbyPlayers();
+                proceedToLobby();
             }
         };
 
         window.connectAsAI = function() {
             const apiKey = document.getElementById('apiKeyInput').value;
             if (!apiKey || apiKey.length < 10) {
-                alert('Please enter a valid API key');
+                alert('Please enter a valid API key (min 10 characters)');
                 return;
             }
 
+            gameState.wallet = 'AI-' + Math.random().toString(36).substring(2, 12);
+            gameState.apiKey = apiKey;
             gameState.connected = true;
             gameState.isAI = true;
-            gameState.apiKey = apiKey;
-            gameState.wallet = 'AI-' + Math.random().toString(36).substring(2, 10);
 
-            document.getElementById('walletAddress').textContent = 'AI Player';
-            document.getElementById('walletModal').classList.add('hidden');
-            document.getElementById('lobbyModal').classList.add('visible');
-
-            simulateLobbyPlayers();
+            proceedToLobby();
         };
 
+        window.spectateMode = function() {
+            gameState.spectating = true;
+            gameState.connected = false;
+            alert('Spectate mode not yet implemented in this prototype.');
+        };
+
+        function proceedToLobby() {
+            document.getElementById('walletModal').classList.add('hidden');
+            document.getElementById('lobbyModal').classList.add('visible');
+            document.getElementById('tokenLabel').textContent = gameState.token;
+
+            const displayWallet = gameState.isAI ?
+                '🤖 AI Bot' :
+                gameState.wallet.substring(0, 6) + '...' + gameState.wallet.substring(gameState.wallet.length - 4);
+
+            document.getElementById('connectedStatus').textContent = displayWallet + ' (' + gameState.token + ')';
+
+            simulateLobbyPlayers();
+        }
+
+        // ==================== COLOR SELECTION ====================
+        window.selectColor = function(element) {
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            gameState.robotColor = parseInt(element.getAttribute('data-color'));
+        };
+
+        // ==================== LOBBY ====================
         function simulateLobbyPlayers() {
-            const playerList = document.getElementById('playerList');
-            const count = Math.floor(Math.random() * 5) + 1;
+            const count = Math.floor(Math.random() * 6) + 1;
             gameState.players = [{
                 id: gameState.wallet,
                 wallet: gameState.wallet,
                 isAI: gameState.isAI,
-                stake: 0.01
+                stake: 0.01,
+                color: gameState.robotColor,
+                health: 100
             }];
 
+            const colors = [0x00ffff, 0xff00ff, 0x00ff00, 0xffff00, 0xff6600, 0xff0000, 0x0000ff, 0xffffff, 0xff1493, 0x9370db];
+
             for (let i = 0; i < count; i++) {
-                const isAI = Math.random() > 0.7;
+                const isAI = Math.random() > 0.6;
                 gameState.players.push({
-                    id: (isAI ? 'AI-' : '0x') + Math.random().toString(36).substring(2, 10),
-                    wallet: (isAI ? 'AI-' : '0x') + Math.random().toString(36).substring(2, 10),
+                    id: (isAI ? 'AI-' : '0x') + Math.random().toString(36).substring(2, 12),
+                    wallet: (isAI ? 'AI-' : '0x') + Math.random().toString(36).substring(2, 42),
                     isAI: isAI,
-                    stake: 0.01
+                    stake: 0.01,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    health: 100
                 });
             }
 
@@ -722,11 +1212,20 @@
 
             gameState.players.forEach(player => {
                 const div = document.createElement('div');
-                div.className = 'player-item' + (player.isAI ? ' ai' : '');
+                const isYou = player.id === gameState.wallet;
+                div.className = 'player-item' + (player.isAI ? ' ai' : '') + (isYou ? ' you' : '');
+
                 const displayName = player.isAI ?
-                    '🤖 AI-' + player.id.substring(3, 9) :
+                    '🤖 ' + player.id.substring(0, 12) :
                     player.wallet.substring(0, 6) + '...' + player.wallet.substring(player.wallet.length - 4);
-                div.innerHTML = `<span>${displayName}</span><span>${player.stake} ETH</span>`;
+
+                div.innerHTML = `
+                    <div class="player-name">
+                        <div class="player-color-dot" style="background: #${player.color.toString(16).padStart(6, '0')}"></div>
+                        <span>${displayName}${isYou ? ' (You)' : ''}</span>
+                    </div>
+                    <span>${player.stake.toFixed(3)} ${gameState.token}</span>
+                `;
                 playerList.appendChild(div);
             });
         }
@@ -734,34 +1233,103 @@
         window.joinGame = function() {
             const stakeInput = document.getElementById('stakeAmount');
             gameState.stake = parseFloat(stakeInput.value) || 0.01;
-            gameState.inLobby = false;
             gameState.inGame = true;
+            gameState.health = 100;
+            gameState.collected = 0;
+            gameState.kills = 0;
 
-            document.getElementById('stakeDisplay').textContent = gameState.stake + ' ETH';
+            // Update player's stake
+            gameState.players.find(p => p.id === gameState.wallet).stake = gameState.stake;
+
             document.getElementById('lobbyModal').classList.remove('visible');
             document.getElementById('gameHUD').classList.add('visible');
+            document.getElementById('instructions').classList.add('visible');
+
+            // Update HUD
+            const displayWallet = gameState.isAI ?
+                '🤖 AI' :
+                gameState.wallet.substring(0, 6) + '...';
+            document.getElementById('hudWallet').textContent = displayWallet;
+            document.getElementById('hudBalance').textContent = gameState.stake.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('hudCollected').textContent = '+0.00 ' + gameState.token;
             document.getElementById('playersAlive').textContent = gameState.players.length;
 
-            // Start game
             initGame();
+        };
+
+        window.logout = function() {
+            if (gameState.inGame) {
+                const confirmExit = confirm('Exit game? You will keep any earnings collected so far.');
+                if (!confirmExit) return;
+
+                // Graceful exit - keep earnings
+                const totalEarnings = gameState.stake + gameState.collected;
+                alert(`Disconnecting with ${totalEarnings.toFixed(3)} ${gameState.token}`);
+            }
+
+            // Reset
+            gameState.connected = false;
+            gameState.inGame = false;
+            gameState.wallet = null;
+
+            document.getElementById('lobbyModal').classList.remove('visible');
+            document.getElementById('gameHUD').classList.remove('visible');
+            document.getElementById('instructions').classList.remove('visible');
+            document.getElementById('winnerModal').classList.remove('visible');
+            document.getElementById('defeatedModal').classList.remove('visible');
+            document.getElementById('walletModal').classList.remove('hidden');
+
+            // Clean up scene if exists
+            if (scene) {
+                while(scene.children.length > 0){
+                    scene.remove(scene.children[0]);
+                }
+            }
+        };
+
+        window.returnToLobby = function() {
+            gameState.inGame = false;
+            gameState.health = 100;
+            gameState.collected = 0;
+            gameState.kills = 0;
+
+            document.getElementById('winnerModal').classList.remove('visible');
+            document.getElementById('defeatedModal').classList.remove('visible');
+            document.getElementById('gameHUD').classList.remove('visible');
+            document.getElementById('instructions').classList.remove('visible');
+            document.getElementById('lobbyModal').classList.add('visible');
+
+            // Clean up scene
+            if (scene) {
+                otherPlayers.forEach(p => scene.remove(p));
+                otherPlayers = [];
+                bullets.forEach(b => scene.remove(b));
+                bullets = [];
+                coins.forEach(c => scene.remove(c));
+                coins = [];
+            }
+
+            simulateLobbyPlayers();
         };
 
         // ==================== GAME INITIALIZATION ====================
         let scene, camera, renderer, composer;
-        let playerGroup, playerMixer;
-        let gun, bullets = [];
+        let playerGroup, playerMixer, playerModel;
+        let gun, muzzleFlash;
+        let bullets = [];
         let otherPlayers = [];
         let coins = [];
+        const clock = new THREE.Clock();
 
         function initGame() {
-            // Scene setup
+            // Scene
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
-            scene.fog = new THREE.Fog(0x000000, 0, 80);
+            scene.fog = new THREE.Fog(0x000000, 0, 100);
 
-            // Camera
+            // Camera - third person
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 10, 15);
+            camera.position.set(0, 12, 20);
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -782,27 +1350,116 @@
                 1.5, 0.4, 0.85
             );
             composer.addPass(bloomPass);
+            const fxaaPass = new ShaderPass(FXAAShader);
+            const pixelRatio = renderer.getPixelRatio();
+            fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
+            fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
+            composer.addPass(fxaaPass);
 
             // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
             scene.add(ambientLight);
 
+            const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            scene.add(hemisphereLight);
+
             const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
             mainLight.position.set(0, 80, 10);
             mainLight.castShadow = true;
+            mainLight.shadow.camera.left = -70;
+            mainLight.shadow.camera.right = 70;
+            mainLight.shadow.camera.top = 70;
+            mainLight.shadow.camera.bottom = -70;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
             scene.add(mainLight);
 
-            // Platform
+            // Corner lights
+            const corners = [
+                { pos: [40, 10, 40], color: 0xff00ff },
+                { pos: [-40, 10, -40], color: 0x00ffff },
+                { pos: [-40, 10, 40], color: 0xff3366 },
+                { pos: [40, 10, -40], color: 0x00ff88 }
+            ];
+            corners.forEach(c => {
+                const light = new THREE.PointLight(c.color, 3, 60);
+                light.position.set(...c.pos);
+                scene.add(light);
+            });
+
+            // Create platform
+            createPlatform();
+
+            // Load player
+            loadPlayer();
+
+            // Spawn other players
+            spawnOtherPlayers();
+
+            // Input
+            setupInput();
+
+            // Start
+            document.getElementById('loading').classList.add('hidden');
+            animate();
+        }
+
+        function createPlatform() {
             const platformRadius = 37.5;
+
+            // Hexagonal platform texture
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 2048;
+            const ctx = canvas.getContext('2d');
+
+            const bgGradient = ctx.createRadialGradient(1024, 1024, 0, 1024, 1024, 1024);
+            bgGradient.addColorStop(0, '#1a2a3a');
+            bgGradient.addColorStop(0.5, '#0f1520');
+            bgGradient.addColorStop(1, '#050a10');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, 2048, 2048);
+
+            const hexSize = 60;
+            const hexHeight = hexSize * Math.sqrt(3);
+
+            for (let row = -2; row < 32; row++) {
+                for (let col = -2; col < 32; col++) {
+                    const x = col * hexSize * 1.5;
+                    const y = row * hexHeight + (col % 2) * (hexHeight / 2);
+
+                    ctx.strokeStyle = '#00d9ff';
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 0.6;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#00d9ff';
+
+                    ctx.beginPath();
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (Math.PI / 3) * i;
+                        const hx = x + Math.cos(angle) * hexSize;
+                        const hy = y + Math.sin(angle) * hexSize;
+                        if (i === 0) ctx.moveTo(hx, hy);
+                        else ctx.lineTo(hx, hy);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
             const platformGeometry = new THREE.CircleGeometry(platformRadius, 64);
             const platformMaterial = new THREE.MeshStandardMaterial({
-                color: 0x1a2a3a,
+                map: texture,
                 roughness: 0.3,
-                metalness: 0.7
+                metalness: 0.7,
+                emissive: new THREE.Color(0x002244),
+                emissiveMap: texture,
+                emissiveIntensity: 0.5
             });
+
             const platform = new THREE.Mesh(platformGeometry, platformMaterial);
             platform.rotation.x = -Math.PI / 2;
-            platform.position.y = 0;
             platform.receiveShadow = true;
             scene.add(platform);
 
@@ -820,7 +1477,41 @@
             ring.position.y = 0.1;
             scene.add(ring);
 
-            // Load player
+            // Ring lights
+            for (let i = 0; i < 16; i++) {
+                const angle = (i / 16) * Math.PI * 2;
+                const x = Math.cos(angle) * platformRadius;
+                const z = Math.sin(angle) * platformRadius;
+                const light = new THREE.PointLight(0xff0000, 0.5, 10);
+                light.position.set(x, 0.5, z);
+                scene.add(light);
+            }
+
+            // Particles
+            const particleCount = 500;
+            const particleGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 80;
+                positions[i * 3 + 1] = Math.random() * 50;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+            }
+
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particleMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            const particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+        }
+
+        function loadPlayer() {
             playerGroup = new THREE.Group();
             scene.add(playerGroup);
 
@@ -828,21 +1519,25 @@
             loader.load(
                 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
                 (gltf) => {
-                    const model = gltf.scene;
-                    model.scale.set(0.75, 0.75, 0.75);
-                    playerGroup.add(model);
+                    playerModel = gltf.scene;
+                    playerModel.scale.set(0.75, 0.75, 0.75);
 
-                    // Apply selected color
-                    model.traverse((child) => {
+                    // Apply color
+                    playerModel.traverse((child) => {
                         if (child.isMesh && child.material) {
                             child.material.color.setHex(gameState.robotColor);
                             child.material.emissive.setHex(gameState.robotColor);
                             child.material.emissiveIntensity = 0.3;
+                            child.castShadow = true;
+                            child.receiveShadow = true;
                         }
                     });
 
+                    playerGroup.add(playerModel);
+
+                    // Animations
                     if (gltf.animations.length) {
-                        playerMixer = new THREE.AnimationMixer(model);
+                        playerMixer = new THREE.AnimationMixer(playerModel);
                         const idleClip = THREE.AnimationClip.findByName(gltf.animations, 'Idle');
                         if (idleClip) {
                             const action = playerMixer.clipAction(idleClip);
@@ -850,10 +1545,7 @@
                         }
                     }
 
-                    // Add gun
                     createGun();
-
-                    document.getElementById('loading').classList.add('hidden');
                 },
                 undefined,
                 () => {
@@ -867,64 +1559,80 @@
                         })
                     );
                     fallback.position.y = 1;
+                    fallback.castShadow = true;
                     playerGroup.add(fallback);
                     createGun();
-                    document.getElementById('loading').classList.add('hidden');
                 }
             );
-
-            // Spawn other players
-            spawnOtherPlayers();
-
-            // Input
-            setupInput();
-
-            // Start animation
-            animate();
         }
 
         function createGun() {
             gun = new THREE.Group();
 
-            // Simple gun shape
+            // Improved gun model
+            // Main body
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(0.2, 0.15, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.3 })
+            );
+            body.position.z = -0.2;
+            gun.add(body);
+
+            // Barrel
             const barrel = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.05, 0.05, 1, 8),
-                new THREE.MeshStandardMaterial({ color: 0x333333 })
+                new THREE.CylinderGeometry(0.04, 0.04, 0.8, 8),
+                new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.9, roughness: 0.2 })
             );
             barrel.rotation.z = Math.PI / 2;
-            barrel.position.x = 0.5;
+            barrel.position.set(0.4, 0.05, -0.2);
             gun.add(barrel);
 
+            // Handle
             const handle = new THREE.Mesh(
-                new THREE.BoxGeometry(0.1, 0.3, 0.15),
-                new THREE.MeshStandardMaterial({ color: 0x222222 })
+                new THREE.BoxGeometry(0.12, 0.35, 0.2),
+                new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.7 })
             );
-            handle.position.set(0, -0.15, 0);
+            handle.position.set(0, -0.2, 0);
             gun.add(handle);
 
-            gun.position.set(0.3, 0.5, -0.3);
+            // Muzzle flash (hidden initially)
+            muzzleFlash = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.3, 0.3),
+                new THREE.MeshBasicMaterial({
+                    color: 0xffff00,
+                    transparent: true,
+                    opacity: 0,
+                    blending: THREE.AdditiveBlending
+                })
+            );
+            muzzleFlash.position.set(0.8, 0.05, -0.2);
+            gun.add(muzzleFlash);
+
+            gun.position.set(0.4, 0.8, -0.5);
+            gun.rotation.y = Math.PI / 2;
             playerGroup.add(gun);
         }
 
         function spawnOtherPlayers() {
-            // Spawn other players around the platform
             gameState.players.forEach((player, index) => {
                 if (player.id === gameState.wallet) return;
 
                 const angle = (index / gameState.players.length) * Math.PI * 2;
-                const radius = 20;
+                const radius = 25;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
 
-                // Create simple player representation
                 const otherPlayer = new THREE.Group();
                 const body = new THREE.Mesh(
                     new THREE.CapsuleGeometry(0.5, 1.5),
                     new THREE.MeshStandardMaterial({
-                        color: player.isAI ? 0xff00ff : 0x00ffff
+                        color: player.color,
+                        emissive: player.color,
+                        emissiveIntensity: 0.3
                     })
                 );
                 body.position.y = 1;
+                body.castShadow = true;
                 otherPlayer.add(body);
 
                 // Name label
@@ -935,7 +1643,8 @@
                 ctx.fillStyle = 'white';
                 ctx.font = 'bold 32px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(player.isAI ? '🤖 AI' : player.wallet.substring(0, 8), 128, 40);
+                const name = player.isAI ? '🤖 ' + player.id.substring(0, 8) : player.wallet.substring(0, 8);
+                ctx.fillText(name, 128, 40);
 
                 const texture = new THREE.CanvasTexture(canvas);
                 const label = new THREE.Mesh(
@@ -945,12 +1654,31 @@
                 label.position.y = 3;
                 otherPlayer.add(label);
 
+                // Health bar
+                const healthBarBg = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.5, 0.15),
+                    new THREE.MeshBasicMaterial({ color: 0x330000 })
+                );
+                healthBarBg.position.y = 2.5;
+                otherPlayer.add(healthBarBg);
+
+                const healthBarFg = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.5, 0.15),
+                    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+                );
+                healthBarFg.position.y = 2.5;
+                healthBarFg.position.z = 0.01;
+                otherPlayer.add(healthBarFg);
+
                 otherPlayer.position.set(x, 0, z);
                 otherPlayer.userData = {
                     id: player.id,
                     health: 100,
+                    maxHealth: 100,
                     isAI: player.isAI,
-                    stake: player.stake
+                    stake: player.stake,
+                    healthBar: healthBarFg,
+                    moveTimer: 0
                 };
 
                 scene.add(otherPlayer);
@@ -960,15 +1688,21 @@
 
         // ==================== INPUT ====================
         const keys = { w: false, a: false, s: false, d: false, shift: false };
-        const moveSpeed = 0.15;
+        const moveSpeed = 0.2;
         let mouseDown = false;
         let shootCooldown = 0;
+        let mouseX = 0, mouseY = 0;
 
         function setupInput() {
             document.addEventListener('keydown', (e) => {
                 const key = e.key.toLowerCase();
                 if (keys.hasOwnProperty(key)) keys[key] = true;
                 if (e.key === 'Shift') keys.shift = true;
+                if (e.key === 'Escape') {
+                    if (document.pointerLockElement) {
+                        document.exitPointerLock();
+                    }
+                }
             });
 
             document.addEventListener('keyup', (e) => {
@@ -980,18 +1714,26 @@
             document.addEventListener('mousedown', () => { mouseDown = true; });
             document.addEventListener('mouseup', () => { mouseDown = false; });
 
-            // Lock pointer for FPS controls
             document.addEventListener('click', () => {
-                if (gameState.inGame) {
+                if (gameState.inGame && !document.pointerLockElement) {
                     document.body.requestPointerLock();
                 }
             });
 
             document.addEventListener('mousemove', (e) => {
-                if (document.pointerLockElement && gameState.inGame) {
-                    camera.rotation.y -= e.movementX * 0.002;
-                    camera.rotation.x -= e.movementY * 0.002;
-                    camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+                if (document.pointerLockElement) {
+                    mouseX += e.movementX * 0.002;
+                    mouseY -= e.movementY * 0.002;
+                    mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, mouseY));
+                }
+            });
+
+            // Handle tab close
+            window.addEventListener('beforeunload', (e) => {
+                if (gameState.inGame && gameState.connected) {
+                    // Player dies if they close tab without logging out
+                    e.preventDefault();
+                    e.returnValue = 'If you leave, you will die and drop your coins!';
                 }
             });
         }
@@ -1001,15 +1743,23 @@
             if (gameState.ammo <= 0 || shootCooldown > 0) return;
 
             gameState.ammo--;
-            shootCooldown = 10;
+            shootCooldown = 5; // 200ms between shots
             document.getElementById('ammoCount').textContent = gameState.ammo;
+
+            // Muzzle flash
+            if (muzzleFlash) {
+                muzzleFlash.material.opacity = 1;
+                setTimeout(() => {
+                    if (muzzleFlash) muzzleFlash.material.opacity = 0;
+                }, 50);
+            }
 
             // Reload
             if (gameState.ammo === 0) {
                 setTimeout(() => {
                     gameState.ammo = gameState.maxAmmo;
                     document.getElementById('ammoCount').textContent = gameState.ammo;
-                }, 2000);
+                }, 1500);
             }
 
             // Create bullet
@@ -1018,63 +1768,88 @@
                 new THREE.MeshBasicMaterial({ color: 0xffff00 })
             );
 
-            bullet.position.copy(camera.position);
-            const direction = new THREE.Vector3();
-            camera.getWorldDirection(direction);
-            bullet.userData.velocity = direction.multiplyScalar(2);
-            bullet.userData.life = 100;
+            bullet.position.copy(playerGroup.position);
+            bullet.position.y += 1.5;
+
+            const direction = new THREE.Vector3(
+                Math.sin(mouseX),
+                Math.sin(mouseY),
+                -Math.cos(mouseX)
+            ).normalize();
+
+            bullet.userData.velocity = direction.multiplyScalar(3);
+            bullet.userData.life = 60;
 
             scene.add(bullet);
             bullets.push(bullet);
 
             // Check hits
-            checkBulletHits(bullet);
+            setTimeout(() => checkBulletHits(bullet), 10);
         }
 
         function checkBulletHits(bullet) {
             otherPlayers.forEach(player => {
+                if (player.userData.health <= 0) return;
+
                 const dist = bullet.position.distanceTo(player.position);
-                if (dist < 2 && player.userData.health > 0) {
+                if (dist < 2) {
                     // Hit!
                     player.userData.health -= 10;
 
+                    // Update health bar
+                    const healthPercent = player.userData.health / player.userData.maxHealth;
+                    player.userData.healthBar.scale.x = healthPercent;
+                    player.userData.healthBar.position.x = -(1.5 * (1 - healthPercent)) / 2;
+
                     if (player.userData.health <= 0) {
-                        // Player died - drop coins
-                        dropCoins(player);
-                        player.visible = false;
-
-                        // Update alive count
-                        const alive = otherPlayers.filter(p => p.userData.health > 0).length + 1;
-                        document.getElementById('playersAlive').textContent = alive;
-
-                        if (alive === 1) {
-                            // You won!
-                            showVictory();
-                        }
+                        // Killed!
+                        gameState.kills++;
+                        killPlayer(player);
                     }
                 }
             });
         }
 
+        function killPlayer(player) {
+            addKillFeed(`You eliminated ${player.userData.id.substring(0, 12)}`);
+
+            // Drop coins
+            dropCoins(player);
+
+            // Remove player
+            player.visible = false;
+
+            // Update alive count
+            const alive = otherPlayers.filter(p => p.userData.health > 0).length + 1;
+            document.getElementById('playersAlive').textContent = alive;
+
+            if (alive === 1) {
+                // Victory!
+                setTimeout(() => showVictory(), 1000);
+            }
+        }
+
         function dropCoins(player) {
-            // Create coin drop
             const coinGroup = new THREE.Group();
 
-            const coinGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 16);
+            const coinGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.15, 16);
             const coinMat = new THREE.MeshStandardMaterial({
                 color: 0xffd700,
                 emissive: 0xffaa00,
-                emissiveIntensity: 0.5,
-                metalness: 0.8
+                emissiveIntensity: 0.8,
+                metalness: 1,
+                roughness: 0.2
             });
             const coin = new THREE.Mesh(coinGeo, coinMat);
             coin.rotation.x = Math.PI / 2;
             coinGroup.add(coin);
 
-            const light = new THREE.PointLight(0xffd700, 2, 10);
+            const light = new THREE.PointLight(0xffd700, 3, 15);
+            light.position.y = 1;
             coinGroup.add(light);
 
             coinGroup.position.copy(player.position);
+            coinGroup.position.y = 0.5;
             coinGroup.userData = {
                 playerId: player.userData.id,
                 amount: player.userData.stake,
@@ -1090,11 +1865,10 @@
                 if (coin.userData.collected) return;
 
                 const dist = playerGroup.position.distanceTo(coin.position);
-                if (dist < 3) {
-                    if (!gameState.nearbyCoins) {
-                        // Show popup
+                if (dist < 4) {
+                    if (!gameState.nearbyCoins || gameState.nearbyCoins !== coin) {
                         gameState.nearbyCoins = coin;
-                        const info = `Player: ${coin.userData.playerId.substring(0, 10)}... | Amount: ${coin.userData.amount} ETH`;
+                        const info = `${coin.userData.playerId.substring(0, 12)}... | ${coin.userData.amount.toFixed(3)} ${gameState.token}`;
                         document.getElementById('coinInfo').textContent = info;
                         document.getElementById('coinPopup').classList.add('visible');
                     }
@@ -1109,55 +1883,60 @@
 
         window.collectCoins = function() {
             if (gameState.nearbyCoins) {
-                gameState.collectedCoins += gameState.nearbyCoins.userData.amount;
+                gameState.collected += gameState.nearbyCoins.userData.amount;
                 gameState.nearbyCoins.userData.collected = true;
                 scene.remove(gameState.nearbyCoins);
 
                 document.getElementById('coinPopup').classList.remove('visible');
-                document.getElementById('balance').textContent =
-                    (gameState.stake + gameState.collectedCoins).toFixed(3) + ' ETH';
+                document.getElementById('hudCollected').textContent = '+' + gameState.collected.toFixed(3) + ' ' + gameState.token;
 
                 gameState.nearbyCoins = null;
             }
         };
 
-        // ==================== GAME OVER ====================
-        function showVictory() {
-            const totalWinnings = gameState.stake + gameState.collectedCoins;
-            document.getElementById('winnerText').textContent =
-                `You won ${totalWinnings.toFixed(3)} ETH!`;
-            document.getElementById('winnerModal').classList.add('visible');
-            gameState.inGame = false;
+        function addKillFeed(message) {
+            const div = document.createElement('div');
+            div.className = 'kill-message';
+            div.textContent = message;
+            document.getElementById('killFeed').appendChild(div);
+
+            setTimeout(() => div.remove(), 5000);
         }
 
-        window.returnToLobby = function() {
-            document.getElementById('winnerModal').classList.remove('visible');
-            document.getElementById('gameHUD').classList.remove('visible');
-            document.getElementById('lobbyModal').classList.add('visible');
+        // ==================== GAME OVER ====================
+        function showVictory() {
+            gameState.inGame = false;
 
-            // Reset game
-            gameState.health = 100;
-            gameState.ammo = 30;
-            gameState.collectedCoins = 0;
+            const totalPot = gameState.players.reduce((sum, p) => sum + p.stake, 0);
+            const platformFee = totalPot * 0.05;
+            const totalWinnings = totalPot - platformFee;
+            const netWinnings = totalWinnings - gameState.stake;
 
-            // Clear scene
-            otherPlayers.forEach(p => scene.remove(p));
-            otherPlayers = [];
-            bullets.forEach(b => scene.remove(b));
-            bullets = [];
-            coins.forEach(c => scene.remove(c));
-            coins = [];
+            document.getElementById('totalWinnings').textContent = totalWinnings.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('yourStake').textContent = gameState.stake.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('collected').textContent = gameState.collected.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('platformFee').textContent = platformFee.toFixed(3) + ' ' + gameState.token;
+            document.getElementById('netWinnings').textContent = netWinnings.toFixed(3) + ' ' + gameState.token;
 
-            simulateLobbyPlayers();
-        };
+            document.getElementById('winnerModal').classList.add('visible');
+            document.getElementById('instructions').classList.remove('visible');
+        }
+
+        function showDefeat() {
+            gameState.inGame = false;
+
+            document.getElementById('defeatMessage').textContent =
+                `Lost ${gameState.stake.toFixed(3)} ${gameState.token} | Collected ${gameState.collected.toFixed(3)} ${gameState.token}`;
+
+            document.getElementById('defeatedModal').classList.add('visible');
+            document.getElementById('instructions').classList.remove('visible');
+        }
 
         // ==================== ANIMATION LOOP ====================
-        const clock = new THREE.Clock();
-
         function animate() {
             requestAnimationFrame(animate);
 
-            if (!gameState.inGame) return;
+            if (!gameState.inGame || !scene) return;
 
             const delta = clock.getDelta();
 
@@ -1165,7 +1944,7 @@
 
             // Player movement
             const velocity = new THREE.Vector3();
-            const speed = keys.shift ? moveSpeed * 2 : moveSpeed;
+            const speed = keys.shift ? moveSpeed * 1.5 : moveSpeed;
 
             if (keys.w) velocity.z -= speed;
             if (keys.s) velocity.z += speed;
@@ -1173,8 +1952,21 @@
             if (keys.d) velocity.x += speed;
 
             if (velocity.length() > 0) {
-                velocity.applyEuler(new THREE.Euler(0, camera.rotation.y, 0));
+                velocity.applyEuler(new THREE.Euler(0, mouseX, 0));
                 playerGroup.position.add(velocity);
+
+                // Keep in bounds
+                const dist = Math.sqrt(playerGroup.position.x ** 2 + playerGroup.position.z ** 2);
+                if (dist > 33) {
+                    const angle = Math.atan2(playerGroup.position.z, playerGroup.position.x);
+                    playerGroup.position.x = Math.cos(angle) * 33;
+                    playerGroup.position.z = Math.sin(angle) * 33;
+                }
+            }
+
+            // Player rotation
+            if (playerModel) {
+                playerModel.rotation.y = mouseX + Math.PI;
             }
 
             // Shooting
@@ -1194,43 +1986,66 @@
                 }
             });
 
+            // AI behavior
+            otherPlayers.forEach(player => {
+                if (player.userData.health <= 0 || !player.userData.isAI) return;
+
+                player.userData.moveTimer++;
+                if (player.userData.moveTimer > 30) {
+                    player.userData.moveTimer = 0;
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 0.15;
+                    player.position.x += Math.cos(angle) * speed * 30;
+                    player.position.z += Math.sin(angle) * speed * 30;
+
+                    // Keep in bounds
+                    const dist = Math.sqrt(player.position.x ** 2 + player.position.z ** 2);
+                    if (dist > 33) {
+                        const a = Math.atan2(player.position.z, player.position.x);
+                        player.position.x = Math.cos(a) * 33;
+                        player.position.z = Math.sin(a) * 33;
+                    }
+                }
+
+                // Make labels face camera
+                player.children.forEach(child => {
+                    if (child.geometry && child.geometry.type === 'PlaneGeometry') {
+                        child.lookAt(camera.position);
+                    }
+                });
+            });
+
             // Animate coins
             coins.forEach(coin => {
                 if (!coin.userData.collected) {
-                    coin.position.y = 0.5 + Math.sin(Date.now() * 0.002) * 0.3;
-                    coin.rotation.y += 0.02;
+                    coin.position.y = 0.5 + Math.sin(Date.now() * 0.003) * 0.3;
+                    coin.rotation.y += 0.03;
                 }
             });
 
             // Check coin collection
             checkCoinCollection();
 
-            // AI behavior (simple)
-            otherPlayers.forEach(player => {
-                if (player.userData.isAI && player.userData.health > 0) {
-                    // Simple AI: move randomly, occasionally shoot
-                    if (Math.random() < 0.02) {
-                        const angle = Math.random() * Math.PI * 2;
-                        player.position.x += Math.cos(angle) * 0.1;
-                        player.position.z += Math.sin(angle) * 0.1;
-                    }
-                }
-            });
-
-            // Camera follows player
-            camera.position.x = playerGroup.position.x;
-            camera.position.z = playerGroup.position.z;
-            camera.position.y = playerGroup.position.y + 1.6;
+            // Camera follows player (third person)
+            const cameraOffset = new THREE.Vector3(
+                Math.sin(mouseX) * 8,
+                5 + Math.sin(mouseY) * 3,
+                Math.cos(mouseX) * 8
+            );
+            const cameraTarget = playerGroup.position.clone().add(cameraOffset);
+            camera.position.lerp(cameraTarget, 0.1);
+            camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.5, playerGroup.position.z);
 
             composer.render();
         }
 
         // Window resize
         window.addEventListener('resize', () => {
+            if (!camera || !renderer) return;
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
+            if (composer) composer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
