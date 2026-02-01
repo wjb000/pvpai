@@ -1,8 +1,10 @@
 const { Pool } = require('pg');
 
-const pool = new Pool({
+// Use connection pooler for Supabase (IPv4 compatible)
+const isSupabase = process.env.DB_HOST && process.env.DB_HOST.includes('supabase.co');
+const connectionConfig = {
   host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
+  port: isSupabase ? 6543 : (process.env.DB_PORT || 5432), // Use pooler port 6543 for Supabase
   database: process.env.DB_NAME || 'pvpai',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD,
@@ -12,7 +14,9 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? {
     rejectUnauthorized: false
   } : false
-});
+};
+
+const pool = new Pool(connectionConfig);
 
 async function setupDatabase() {
   const client = await pool.connect();
