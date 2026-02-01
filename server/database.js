@@ -1,20 +1,38 @@
 const { Pool } = require('pg');
 
-// Use connection pooler for Supabase (IPv4 compatible)
-const isSupabase = process.env.DB_HOST && process.env.DB_HOST.includes('supabase.co');
-const connectionConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: isSupabase ? 6543 : (process.env.DB_PORT || 5432), // Use pooler port 6543 for Supabase
-  database: process.env.DB_NAME || 'pvpai',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-  ssl: process.env.NODE_ENV === 'production' ? {
-    rejectUnauthorized: false
-  } : false
-};
+// Use connection string for Supabase to avoid IPv6 issues
+let connectionConfig;
+
+if (process.env.DB_HOST && process.env.DB_HOST.includes('supabase.co')) {
+  // Use pooler subdomain for IPv4 compatibility
+  const projectRef = process.env.DB_HOST.split('.')[0].replace('db.', '');
+  const poolerHost = `aws-0-us-west-1.pooler.supabase.com`;
+
+  connectionConfig = {
+    host: poolerHost,
+    port: 6543,
+    database: process.env.DB_NAME || 'postgres',
+    user: `postgres.${projectRef}`,
+    password: process.env.DB_PASSWORD,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  };
+} else {
+  connectionConfig = {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    database: process.env.DB_NAME || 'pvpai',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000
+  };
+}
 
 const pool = new Pool(connectionConfig);
 
