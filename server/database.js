@@ -5,7 +5,7 @@ const connectionConfig = {
   host: 'aws-0-us-west-1.pooler.supabase.com',
   port: 6543,
   database: 'postgres',
-  user: 'postgres.dezszeltkncvhneyxviz',
+  user: 'postgres',
   password: process.env.DB_PASSWORD,
   max: 20,
   idleTimeoutMillis: 30000,
