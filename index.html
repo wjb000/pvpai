@@ -1620,7 +1620,8 @@
 
             gameState.ammo--;
             shootCooldown = 5;
-            document.getElementById('ammoCount')?.textContent = gameState.ammo;
+            const ammoEl = document.getElementById('ammoCount');
+            if(ammoEl) ammoEl.textContent = gameState.ammo;
 
             if(muzzleFlash) {
                 muzzleFlash.material.opacity = 1;
@@ -1630,7 +1631,8 @@
             if(gameState.ammo===0) {
                 setTimeout(() => {
                     gameState.ammo = gameState.maxAmmo;
-                    document.getElementById('ammoCount')?.textContent = gameState.ammo;
+                    const ammoEl = document.getElementById('ammoCount');
+                    if(ammoEl) ammoEl.textContent = gameState.ammo;
                 }, 1500);
             }
 
