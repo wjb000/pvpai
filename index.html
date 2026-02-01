@@ -1248,7 +1248,9 @@
             scene.add(mainLight);
 
             [[40,10,40,0xff00ff],[-40,10,-40,0x00ffff],[-40,10,40,0xff3366],[40,10,-40,0x00ff88]].forEach(([x,y,z,c]) => {
-                scene.add(Object.assign(new THREE.PointLight(c, 3, 60), {position: {x,y,z}}));
+                const light = new THREE.PointLight(c, 3, 60);
+                light.position.set(x, y, z);
+                scene.add(light);
             });
 
             createPlatform();
