@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D World Explorer</title>
+    <title>Crypto Battle Royale</title>
     <style>
         * {
             margin: 0;
@@ -13,19 +13,390 @@
         body {
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none;
             background: #000;
-            opacity: 0;
-            animation: fadeIn 0.3s forwards;
-        }
-        @keyframes fadeIn {
-            to { opacity: 1; }
         }
         canvas {
             display: block;
             width: 100%;
             height: 100vh;
         }
+
+        /* Wallet Connection Modal */
+        #walletModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        #walletModal.hidden {
+            display: none;
+        }
+        .wallet-container {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #00ffff;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.5);
+            max-width: 500px;
+            width: 90%;
+        }
+        .wallet-container h2 {
+            color: #00ffff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .wallet-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .wallet-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .wallet-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .wallet-btn.metamask {
+            background: linear-gradient(135deg, #f6851b, #e2761b);
+        }
+        .wallet-btn.phantom {
+            background: linear-gradient(135deg, #ab9ff2, #5b4cdb);
+        }
+        .wallet-btn.coinbase {
+            background: linear-gradient(135deg, #0052ff, #0041cc);
+        }
+        .ai-section {
+            border-top: 2px solid #00ffff;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .ai-section h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        #apiKeyInput {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            background: rgba(0, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        #apiKeyInput::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .info-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Lobby Modal */
+        #lobbyModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        #lobbyModal.visible {
+            display: flex;
+        }
+        .lobby-container {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+            max-width: 600px;
+            width: 90%;
+        }
+        .lobby-container h2 {
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .stake-input-group {
+            margin-bottom: 30px;
+        }
+        .stake-input-group label {
+            color: white;
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        #stakeAmount {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            background: rgba(255, 215, 0, 0.1);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+        .players-waiting {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .players-waiting h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+        }
+        .player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .player-item {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+        }
+        .player-item.ai {
+            background: rgba(255, 0, 255, 0.1);
+        }
+        #joinGameBtn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #joinGameBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+        #joinGameBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* HUD */
+        #gameHUD {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        #gameHUD.visible {
+            display: block;
+        }
+        .hud-panel {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            color: white;
+            margin-bottom: 10px;
+            min-width: 250px;
+        }
+        .health-bar-container {
+            margin-top: 10px;
+        }
+        .health-bar {
+            width: 100%;
+            height: 25px;
+            background: rgba(255, 0, 0, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        .health-bar-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .health-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 5px black;
+            line-height: 25px;
+        }
+        .ammo-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-top: 10px;
+        }
+        .players-alive {
+            color: #00ffff;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        /* Coin Drop Popup */
+        #coinPopup {
+            position: fixed;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 170, 0, 0.95));
+            border: 4px solid #ffd700;
+            border-radius: 15px;
+            padding: 20px 30px;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            min-width: 300px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+        }
+        #coinPopup.visible {
+            display: block;
+            animation: popupBounce 0.5s ease;
+        }
+        @keyframes popupBounce {
+            0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+            50% { transform: translateX(-50%) scale(1.05); }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        #coinPopup h3 {
+            color: #000;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        #coinPopup p {
+            color: #000;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        #coinPopup button {
+            background: linear-gradient(135deg, #fff, #ffe);
+            color: #000;
+            border: 3px solid #ffd700;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Winner Modal */
+        #winnerModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+        #winnerModal.visible {
+            display: flex;
+        }
+        .winner-container {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            padding: 60px;
+            border-radius: 20px;
+            border: 5px solid #fff;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
+            text-align: center;
+        }
+        .winner-container h1 {
+            font-size: 48px;
+            color: #000;
+            margin-bottom: 20px;
+        }
+        .winner-container p {
+            font-size: 24px;
+            color: #000;
+            margin-bottom: 30px;
+        }
+        .winner-container button {
+            background: #000;
+            color: #ffd700;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Crosshair */
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .crosshair-line {
+            position: absolute;
+            background: rgba(255, 0, 0, 0.8);
+        }
+        .crosshair-line.h {
+            width: 20px;
+            height: 2px;
+            left: 5px;
+            top: 14px;
+        }
+        .crosshair-line.v {
+            width: 2px;
+            height: 20px;
+            left: 14px;
+            top: 5px;
+        }
+        .crosshair-center {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 0, 0, 0.8);
+            left: 13px;
+            top: 13px;
+            border-radius: 50%;
+        }
+
+        /* Loading */
         #loading {
             position: absolute;
             top: 0;
@@ -61,211 +432,103 @@
             font-size: 18px;
             letter-spacing: 2px;
         }
-        #instructions {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(30,30,30,0.8));
-            padding: 15px 30px;
-            border-radius: 15px;
-            font-size: 14px;
-            text-align: center;
-            pointer-events: none;
-            z-index: 100;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        #joystick {
-            position: absolute;
-            bottom: 80px;
-            left: 80px;
-            width: 140px;
-            height: 140px;
-            background: radial-gradient(circle, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
-            border: 3px solid rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-            display: none;
-            touch-action: none;
-            z-index: 100;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        #joystick-knob {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,255,255,0.5));
-            border: 3px solid white;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-        }
-        .desktop-only {
-            display: inline;
-        }
-        .mobile-only {
-            display: none;
-        }
-        @media (max-width: 768px) {
-            #joystick {
-                display: block;
-            }
-            #instructions {
-                font-size: 12px;
-                padding: 10px 15px;
-                top: 10px;
-            }
-            .desktop-only {
-                display: none;
-            }
-            .mobile-only {
-                display: inline;
-            }
-            #loading {
-                padding: 10px;
-            }
-            .loading-text {
-                font-size: 14px;
-            }
-        }
-        @media (max-width: 480px) {
-            #joystick {
-                bottom: 60px;
-                left: 60px;
-                width: 120px;
-                height: 120px;
-            }
-            #instructions {
-                font-size: 11px;
-                padding: 8px 12px;
-            }
-        }
-
-        /* Loot item popup - shared styles */
-        .lootPopup {
-            position: fixed;
-            bottom: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 20px 30px;
-            border-radius: 15px;
-            border: 4px solid;
-            z-index: 1000;
-            display: none;
-            text-align: center;
-            min-width: 300px;
-            pointer-events: all;
-        }
-        .lootPopup.visible {
-            display: block;
-            animation: popupBounce 0.5s ease;
-        }
-        /* Gold/legendary popup */
-        #lootPopup1 {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 170, 0, 0.95));
-            border-color: #ffd700;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4);
-        }
-        /* Purple/epic popup */
-        #lootPopup2 {
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.95), rgba(75, 0, 130, 0.95));
-            border-color: #9370db;
-            box-shadow: 0 0 30px rgba(138, 43, 226, 0.8), 0 0 60px rgba(138, 43, 226, 0.4);
-        }
-        /* Green/emerald popup */
-        #lootPopup3 {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
-            border-color: #10b981;
-            box-shadow: 0 0 30px rgba(16, 185, 129, 0.8), 0 0 60px rgba(16, 185, 129, 0.4);
-        }
-        @keyframes popupBounce {
-            0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
-            50% { transform: translateX(-50%) scale(1.05); }
-            100% { transform: translateX(-50%) scale(1); opacity: 1; }
-        }
-        .lootPopup h3 {
-            margin: 0 0 10px 0;
-            color: #fff;
-            font-size: 20px;
-            text-transform: uppercase;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .lootPopup p {
-            margin: 0 0 15px 0;
-            color: #fff;
-            font-size: 14px;
-            font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-        .lootPopup button {
-            background: linear-gradient(135deg, #fff, #ffe);
-            color: #000;
-            border: 3px solid;
-            padding: 12px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-        #lootPopup1 button {
-            border-color: #ffd700;
-        }
-        #lootPopup2 button {
-            border-color: #9370db;
-        }
-        #lootPopup3 button {
-            border-color: #10b981;
-        }
-        .lootPopup button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-            background: linear-gradient(135deg, #ffffaa, #ffff88);
-        }
-        .lootPopup button:active {
-            transform: scale(0.95);
-        }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
     <div id="loading">
         <div class="loader"></div>
-        <div class="loading-text">LOADING WORLD...</div>
+        <div class="loading-text">LOADING BATTLE ARENA...</div>
     </div>
 
-    <div id="instructions">
-        <span class="desktop-only"><strong>WASD</strong> to Move | <strong>SHIFT</strong> to Sprint | <strong>SPACE</strong> to Jump</span>
-        <span class="mobile-only"><strong>Joystick</strong> to Move</span>
+    <!-- Wallet Connection Modal -->
+    <div id="walletModal">
+        <div class="wallet-container">
+            <h2>🎮 Connect to Play</h2>
+            <div class="wallet-buttons">
+                <button class="wallet-btn metamask" onclick="connectWallet('metamask')">
+                    🦊 Connect MetaMask
+                </button>
+                <button class="wallet-btn phantom" onclick="connectWallet('phantom')">
+                    👻 Connect Phantom
+                </button>
+                <button class="wallet-btn coinbase" onclick="connectWallet('coinbase')">
+                    💼 Connect Coinbase Wallet
+                </button>
+            </div>
+
+            <div class="ai-section">
+                <h3>🤖 AI Player Mode</h3>
+                <input type="text" id="apiKeyInput" placeholder="Enter Claude/OpenAI API Key">
+                <button class="wallet-btn" onclick="connectAsAI()">
+                    Join as AI Player
+                </button>
+                <p class="info-text">AI players use your API key to make decisions autonomously</p>
+            </div>
+
+            <p class="info-text">Or spectate without connecting</p>
+        </div>
     </div>
 
-    <div id="joystick">
-        <div id="joystick-knob"></div>
+    <!-- Lobby Modal -->
+    <div id="lobbyModal">
+        <div class="lobby-container">
+            <h2>💰 Game Lobby</h2>
+
+            <div class="stake-input-group">
+                <label for="stakeAmount">Enter Stake Amount (ETH/SOL)</label>
+                <input type="number" id="stakeAmount" placeholder="0.01" step="0.001" min="0.001" value="0.01">
+                <p class="info-text">Platform fee: 5% of total pot</p>
+            </div>
+
+            <div class="players-waiting">
+                <h3>Players Waiting (<span id="playerCount">0</span>/10)</h3>
+                <div class="player-list" id="playerList"></div>
+            </div>
+
+            <button id="joinGameBtn" onclick="joinGame()">JOIN BATTLE</button>
+            <p class="info-text">Game starts with 2+ players (max 10)</p>
+        </div>
     </div>
 
-    <!-- Loot item popups -->
-    <div id="lootPopup1" class="lootPopup">
-        <h3>⭐ Item Available</h3>
-        <p>Legendary Treasure</p>
-        <button id="openButton1">COLLECT</button>
+    <!-- Game HUD -->
+    <div id="gameHUD">
+        <div class="hud-panel">
+            <div><strong>Wallet:</strong> <span id="walletAddress">Not Connected</span></div>
+            <div><strong>Balance:</strong> <span id="balance">0.00 ETH</span></div>
+            <div><strong>Stake:</strong> <span id="stakeDisplay">0.00 ETH</span></div>
+            <div class="health-bar-container">
+                <div class="health-bar">
+                    <div class="health-bar-fill" id="healthBar" style="width: 100%"></div>
+                    <div class="health-text" id="healthText">100 / 100 HP</div>
+                </div>
+            </div>
+            <div class="ammo-display">🔫 <span id="ammoCount">30</span> / ∞</div>
+            <div class="players-alive">👥 <span id="playersAlive">10</span> players alive</div>
+        </div>
     </div>
 
-    <div id="lootPopup2" class="lootPopup">
-        <h3>💎 Item Available</h3>
-        <p>Epic Artifact</p>
-        <button id="openButton2">COLLECT</button>
+    <!-- Crosshair -->
+    <div id="crosshair">
+        <div class="crosshair-line h"></div>
+        <div class="crosshair-line v"></div>
+        <div class="crosshair-center"></div>
     </div>
 
-    <div id="lootPopup3" class="lootPopup">
-        <h3>🌟 Item Available</h3>
-        <p>Rare Crystal</p>
-        <button id="openButton3">COLLECT</button>
+    <!-- Coin Drop Popup -->
+    <div id="coinPopup">
+        <h3>💰 Dropped Coins!</h3>
+        <p id="coinInfo">Player: 0x123... | Amount: 0.05 ETH</p>
+        <button onclick="collectCoins()">COLLECT</button>
+    </div>
+
+    <!-- Winner Modal -->
+    <div id="winnerModal">
+        <div class="winner-container">
+            <h1>🏆 VICTORY! 🏆</h1>
+            <p id="winnerText">You won 0.45 ETH!</p>
+            <button onclick="returnToLobby()">Return to Lobby</button>
+        </div>
     </div>
 
     <script type="importmap">
@@ -283,879 +546,626 @@
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-        import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
-        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
-        // Loading screen
-        const loadingScreen = document.getElementById('loading');
-        const loadingText = document.querySelector('.loading-text');
-
-        let loadedAssets = 0;
-        const totalAssets = 2;
-
-        function updateLoadingProgress() {
-            loadedAssets++;
-            loadingText.textContent = `LOADING... ${Math.round((loadedAssets / totalAssets) * 100)}%`;
-            if (loadedAssets >= totalAssets) {
-                setTimeout(() => {
-                    loadingScreen.classList.add('hidden');
-                }, 500);
-            }
-        }
-
-        // Scene setup
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000);
-        scene.fog = new THREE.Fog(0x000000, 0, 80);
-
-        // Camera
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 10, 15);
-
-        // Renderer
-        const renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            powerPreference: "high-performance"
-        });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        document.body.appendChild(renderer.domElement);
-
-        // Post-processing
-        const composer = new EffectComposer(renderer);
-        const renderPass = new RenderPass(scene, camera);
-        composer.addPass(renderPass);
-
-        const bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight),
-            1.5,
-            0.4,
-            0.85
-        );
-        composer.addPass(bloomPass);
-
-        const fxaaPass = new ShaderPass(FXAAShader);
-        const pixelRatio = renderer.getPixelRatio();
-        fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
-        fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
-        composer.addPass(fxaaPass);
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-
-        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-        scene.add(hemisphereLight);
-
-        const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        mainLight.position.set(0, 80, 10);
-        mainLight.castShadow = true;
-        mainLight.shadow.camera.left = -70;
-        mainLight.shadow.camera.right = 70;
-        mainLight.shadow.camera.top = 70;
-        mainLight.shadow.camera.bottom = -70;
-        mainLight.shadow.mapSize.width = 2048;
-        mainLight.shadow.mapSize.height = 2048;
-        mainLight.shadow.bias = -0.0001;
-        scene.add(mainLight);
-
-        // Corner accent lights
-        const neonLight1 = new THREE.PointLight(0xff00ff, 3, 60);
-        neonLight1.position.set(40, 10, 40);
-        scene.add(neonLight1);
-
-        const neonLight2 = new THREE.PointLight(0x00ffff, 3, 60);
-        neonLight2.position.set(-40, 10, -40);
-        scene.add(neonLight2);
-
-        const neonLight3 = new THREE.PointLight(0xff3366, 3, 60);
-        neonLight3.position.set(-40, 10, 40);
-        scene.add(neonLight3);
-
-        const neonLight4 = new THREE.PointLight(0x00ff88, 3, 60);
-        neonLight4.position.set(40, 10, -40);
-        scene.add(neonLight4);
-
-        // Create platform
-        const platformRadius = 37.5;
-
-        const textureCanvas = document.createElement('canvas');
-        textureCanvas.width = 2048;
-        textureCanvas.height = 2048;
-        const texCtx = textureCanvas.getContext('2d');
-
-        const bgGradient = texCtx.createRadialGradient(1024, 1024, 0, 1024, 1024, 1024);
-        bgGradient.addColorStop(0, '#1a2a3a');
-        bgGradient.addColorStop(0.5, '#0f1520');
-        bgGradient.addColorStop(1, '#050a10');
-        texCtx.fillStyle = bgGradient;
-        texCtx.fillRect(0, 0, 2048, 2048);
-
-        const hexSize = 60;
-        const hexHeight = hexSize * Math.sqrt(3);
-
-        for (let row = -2; row < 32; row++) {
-            for (let col = -2; col < 32; col++) {
-                const x = col * hexSize * 1.5;
-                const y = row * hexHeight + (col % 2) * (hexHeight / 2);
-
-                texCtx.strokeStyle = '#00d9ff';
-                texCtx.lineWidth = 2;
-                texCtx.globalAlpha = 0.6;
-                texCtx.shadowBlur = 10;
-                texCtx.shadowColor = '#00d9ff';
-
-                texCtx.beginPath();
-                for (let i = 0; i < 6; i++) {
-                    const angle = (Math.PI / 3) * i;
-                    const hx = x + Math.cos(angle) * hexSize;
-                    const hy = y + Math.sin(angle) * hexSize;
-                    if (i === 0) texCtx.moveTo(hx, hy);
-                    else texCtx.lineTo(hx, hy);
-                }
-                texCtx.closePath();
-                texCtx.stroke();
-
-                const centerGlow = texCtx.createRadialGradient(x, y, 0, x, y, hexSize * 0.4);
-                centerGlow.addColorStop(0, 'rgba(0, 217, 255, 0.3)');
-                centerGlow.addColorStop(1, 'rgba(0, 217, 255, 0)');
-                texCtx.fillStyle = centerGlow;
-                texCtx.fill();
-            }
-        }
-
-        texCtx.shadowBlur = 0;
-
-        const floorTexture = new THREE.CanvasTexture(textureCanvas);
-        floorTexture.needsUpdate = true;
-
-        const platformGeometry = new THREE.CircleGeometry(platformRadius, 64);
-        const platformMaterial = new THREE.MeshStandardMaterial({
-            map: floorTexture,
-            roughness: 0.3,
-            metalness: 0.7,
-            emissive: new THREE.Color(0x002244),
-            emissiveMap: floorTexture,
-            emissiveIntensity: 0.5
-        });
-
-        const platform = new THREE.Mesh(platformGeometry, platformMaterial);
-        platform.rotation.x = -Math.PI / 2;
-        platform.position.y = 0;
-        platform.receiveShadow = true;
-        scene.add(platform);
-
-        // Glowing ring around edge
-        const ringGeometry = new THREE.RingGeometry(platformRadius - 0.5, platformRadius + 0.5, 64);
-        const ringMaterial = new THREE.MeshStandardMaterial({
-            color: 0x00ccff,
-            emissive: 0x00ccff,
-            emissiveIntensity: 1.5,
-            transparent: true,
-            opacity: 0.8,
-            side: THREE.DoubleSide
-        });
-
-        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-        ring.rotation.x = -Math.PI / 2;
-        ring.position.y = 0.1;
-        scene.add(ring);
-
-        // Ring lights
-        const ringLightCount = 16;
-        for (let i = 0; i < ringLightCount; i++) {
-            const angle = (i / ringLightCount) * Math.PI * 2;
-            const x = Math.cos(angle) * platformRadius;
-            const z = Math.sin(angle) * platformRadius;
-
-            const light = new THREE.PointLight(0x00ccff, 0.5, 10);
-            light.position.set(x, 0.5, z);
-            scene.add(light);
-        }
-
-        // Create loot items
-        const textureLoader = new THREE.TextureLoader();
-
-        // LOOT ITEM 1 - Gold Legendary
-        const lootGroup1 = new THREE.Group();
-        const lootCanvas1 = document.createElement('canvas');
-        lootCanvas1.width = 1024;
-        lootCanvas1.height = 576;
-        const lootCtx1 = lootCanvas1.getContext('2d');
-
-        lootCtx1.fillStyle = '#ffd700';
-        lootCtx1.fillRect(0, 0, 1024, 576);
-        lootCtx1.fillStyle = '#000';
-        lootCtx1.font = 'bold 120px Arial';
-        lootCtx1.textAlign = 'center';
-        lootCtx1.textBaseline = 'middle';
-        lootCtx1.fillText('⭐', 512, 288);
-
-        const lootTexture1 = new THREE.CanvasTexture(lootCanvas1);
-        const lootGeometry = new THREE.PlaneGeometry(4, 2.25);
-        const lootMesh1 = new THREE.Mesh(lootGeometry, new THREE.MeshBasicMaterial({
-            map: lootTexture1,
-            side: THREE.DoubleSide
-        }));
-        lootMesh1.rotation.x = -Math.PI / 2;
-        lootGroup1.add(lootMesh1);
-
-        const borderGeometry = new THREE.PlaneGeometry(4.4, 2.65);
-        const borderMesh1 = new THREE.Mesh(borderGeometry, new THREE.MeshBasicMaterial({
-            color: 0xffd700,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
-        }));
-        borderMesh1.rotation.x = -Math.PI / 2;
-        borderMesh1.position.y = -0.05;
-        lootGroup1.add(borderMesh1);
-
-        const outerGlowGeometry = new THREE.PlaneGeometry(5.5, 3.5);
-        const outerGlowMesh1 = new THREE.Mesh(outerGlowGeometry, new THREE.MeshBasicMaterial({
-            color: 0xffaa00,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.3,
-            blending: THREE.AdditiveBlending
-        }));
-        outerGlowMesh1.rotation.x = -Math.PI / 2;
-        outerGlowMesh1.position.y = -0.1;
-        lootGroup1.add(outerGlowMesh1);
-
-        lootGroup1.position.set(0, 0.5, -28);
-        scene.add(lootGroup1);
-
-        const lootLight1 = new THREE.PointLight(0xffd700, 2, 10);
-        lootLight1.position.set(0, 1, -28);
-        scene.add(lootLight1);
-
-        const lootPosition1 = { x: 0, z: -28, radius: 4 };
-
-        // LOOT ITEM 2 - Purple Epic
-        const lootGroup2 = new THREE.Group();
-        const lootCanvas2 = document.createElement('canvas');
-        lootCanvas2.width = 1024;
-        lootCanvas2.height = 576;
-        const lootCtx2 = lootCanvas2.getContext('2d');
-
-        lootCtx2.fillStyle = '#9370db';
-        lootCtx2.fillRect(0, 0, 1024, 576);
-        lootCtx2.fillStyle = '#000';
-        lootCtx2.font = 'bold 120px Arial';
-        lootCtx2.textAlign = 'center';
-        lootCtx2.textBaseline = 'middle';
-        lootCtx2.fillText('💎', 512, 288);
-
-        const lootTexture2 = new THREE.CanvasTexture(lootCanvas2);
-        const lootMesh2 = new THREE.Mesh(lootGeometry.clone(), new THREE.MeshBasicMaterial({
-            map: lootTexture2,
-            side: THREE.DoubleSide
-        }));
-        lootMesh2.rotation.x = -Math.PI / 2;
-        lootGroup2.add(lootMesh2);
-
-        const borderMesh2 = new THREE.Mesh(borderGeometry.clone(), new THREE.MeshBasicMaterial({
-            color: 0x9370db,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
-        }));
-        borderMesh2.rotation.x = -Math.PI / 2;
-        borderMesh2.position.y = -0.05;
-        lootGroup2.add(borderMesh2);
-
-        const outerGlowMesh2 = new THREE.Mesh(outerGlowGeometry.clone(), new THREE.MeshBasicMaterial({
-            color: 0x8a2be2,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.3,
-            blending: THREE.AdditiveBlending
-        }));
-        outerGlowMesh2.rotation.x = -Math.PI / 2;
-        outerGlowMesh2.position.y = -0.1;
-        lootGroup2.add(outerGlowMesh2);
-
-        lootGroup2.position.set(-24, 0.5, -18);
-        scene.add(lootGroup2);
-
-        const lootLight2 = new THREE.PointLight(0x9370db, 2, 10);
-        lootLight2.position.set(-24, 1, -18);
-        scene.add(lootLight2);
-
-        const lootPosition2 = { x: -24, z: -18, radius: 4 };
-
-        // LOOT ITEM 3 - Green Rare
-        const lootGroup3 = new THREE.Group();
-        const lootCanvas3 = document.createElement('canvas');
-        lootCanvas3.width = 1024;
-        lootCanvas3.height = 576;
-        const lootCtx3 = lootCanvas3.getContext('2d');
-
-        lootCtx3.fillStyle = '#10b981';
-        lootCtx3.fillRect(0, 0, 1024, 576);
-        lootCtx3.fillStyle = '#000';
-        lootCtx3.font = 'bold 120px Arial';
-        lootCtx3.textAlign = 'center';
-        lootCtx3.textBaseline = 'middle';
-        lootCtx3.fillText('🌟', 512, 288);
-
-        const lootTexture3 = new THREE.CanvasTexture(lootCanvas3);
-        const lootMesh3 = new THREE.Mesh(lootGeometry.clone(), new THREE.MeshBasicMaterial({
-            map: lootTexture3,
-            side: THREE.DoubleSide
-        }));
-        lootMesh3.rotation.x = -Math.PI / 2;
-        lootGroup3.add(lootMesh3);
-
-        const borderMesh3 = new THREE.Mesh(borderGeometry.clone(), new THREE.MeshBasicMaterial({
-            color: 0x10b981,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
-        }));
-        borderMesh3.rotation.x = -Math.PI / 2;
-        borderMesh3.position.y = -0.05;
-        lootGroup3.add(borderMesh3);
-
-        const outerGlowMesh3 = new THREE.Mesh(outerGlowGeometry.clone(), new THREE.MeshBasicMaterial({
-            color: 0x059669,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.3,
-            blending: THREE.AdditiveBlending
-        }));
-        outerGlowMesh3.rotation.x = -Math.PI / 2;
-        outerGlowMesh3.position.y = -0.1;
-        lootGroup3.add(outerGlowMesh3);
-
-        lootGroup3.position.set(24, 0.5, -18);
-        scene.add(lootGroup3);
-
-        const lootLight3 = new THREE.PointLight(0x10b981, 2, 10);
-        lootLight3.position.set(24, 1, -18);
-        scene.add(lootLight3);
-
-        const lootPosition3 = { x: 24, z: -18, radius: 4 };
-
-        // Popup management
-        const lootPopup1 = document.getElementById('lootPopup1');
-        const openButton1 = document.getElementById('openButton1');
-        const lootPopup2 = document.getElementById('lootPopup2');
-        const openButton2 = document.getElementById('openButton2');
-        const lootPopup3 = document.getElementById('lootPopup3');
-        const openButton3 = document.getElementById('openButton3');
-
-        openButton1.addEventListener('click', () => {
-            alert('Legendary Treasure Collected!');
-        });
-        openButton2.addEventListener('click', () => {
-            alert('Epic Artifact Collected!');
-        });
-        openButton3.addEventListener('click', () => {
-            alert('Rare Crystal Collected!');
-        });
-
-        // Load character
-        const loader = new GLTFLoader();
-        const playerGroup = new THREE.Group();
-        let playerModel = null;
-        let playerMixer = null;
-        let walkAction = null;
-        let idleAction = null;
-        let runAction = null;
-        let playerBody = null;
-        scene.add(playerGroup);
-
-        const robotModel = {
-            url: 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
-            scale: 0.75,
-            rotation: 0
+        // ==================== GAME STATE ====================
+        const gameState = {
+            connected: false,
+            isAI: false,
+            wallet: null,
+            apiKey: null,
+            inLobby: false,
+            inGame: false,
+            players: [],
+            localPlayer: null,
+            health: 100,
+            maxHealth: 100,
+            ammo: 30,
+            maxAmmo: 30,
+            stake: 0.01,
+            collectedCoins: 0,
+            nearbyCoins: null
         };
 
-        loader.load(
-            robotModel.url,
-            (gltf) => {
-                playerModel = gltf.scene;
-                playerModel.scale.set(robotModel.scale, robotModel.scale, robotModel.scale);
-                playerModel.rotation.y = robotModel.rotation;
+        // ==================== WALLET CONNECTION ====================
+        window.connectWallet = async function(walletType) {
+            console.log(`Connecting to ${walletType}...`);
 
-                playerModel.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-
-                        if (child.material) {
-                            if (child.material.color) {
-                                const currentColor = child.material.color;
-                                if (currentColor.r > 0.5 && currentColor.g < 0.5) {
-                                    child.material.color = new THREE.Color(0x00ccff);
-                                    child.material.emissive = new THREE.Color(0x0088cc);
-                                    child.material.emissiveIntensity = 0.3;
-                                }
-                            }
-                        }
+            try {
+                let accounts;
+                if (walletType === 'metamask') {
+                    if (typeof window.ethereum !== 'undefined') {
+                        accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        gameState.wallet = accounts[0];
+                    } else {
+                        alert('MetaMask not installed! This is a demo - proceeding with mock wallet.');
+                        gameState.wallet = '0x' + Math.random().toString(36).substring(2, 15);
                     }
-                });
-
-                playerGroup.add(playerModel);
-                playerBody = playerModel;
-
-                if (gltf.animations && gltf.animations.length) {
-                    playerMixer = new THREE.AnimationMixer(playerModel);
-
-                    gltf.animations.forEach((clip) => {
-                        const name = clip.name.toLowerCase();
-                        const action = playerMixer.clipAction(clip);
-
-                        action.setLoop(THREE.LoopRepeat);
-                        action.clampWhenFinished = false;
-                        action.enable = true;
-                        action.timeScale = 1;
-                        action.time = 0;
-
-                        if (name.includes('walk')) {
-                            walkAction = action;
-                        } else if (name.includes('idle')) {
-                            idleAction = action;
-                        } else if (name.includes('run')) {
-                            runAction = action;
-                        }
-                    });
-
-                    if (idleAction) {
-                        idleAction.reset();
-                        idleAction.setEffectiveWeight(1);
-                        idleAction.play();
+                } else if (walletType === 'phantom') {
+                    if (window.solana && window.solana.isPhantom) {
+                        const resp = await window.solana.connect();
+                        gameState.wallet = resp.publicKey.toString();
+                    } else {
+                        alert('Phantom not installed! This is a demo - proceeding with mock wallet.');
+                        gameState.wallet = 'Sol' + Math.random().toString(36).substring(2, 15);
                     }
+                } else {
+                    // Mock wallet for demo
+                    gameState.wallet = '0x' + Math.random().toString(36).substring(2, 15);
                 }
 
-                updateLoadingProgress();
-            },
-            (progress) => {
-                console.log('Loading character:', (progress.loaded / progress.total * 100) + '%');
-            },
-            (error) => {
-                console.error('Error loading character:', error);
-                const fallbackGeo = new THREE.CapsuleGeometry(0.5, 1.5, 8, 16);
-                const fallbackMat = new THREE.MeshStandardMaterial({
-                    color: 0x00ffff,
-                    emissive: 0x0066ff,
-                    emissiveIntensity: 0.5,
-                    metalness: 0.8,
-                    roughness: 0.2
-                });
-                playerBody = new THREE.Mesh(fallbackGeo, fallbackMat);
-                playerBody.castShadow = true;
-                playerBody.position.y = 1;
-                playerGroup.add(playerBody);
-                updateLoadingProgress();
+                gameState.connected = true;
+                gameState.isAI = false;
+
+                // Update HUD
+                document.getElementById('walletAddress').textContent =
+                    gameState.wallet.substring(0, 6) + '...' + gameState.wallet.substring(gameState.wallet.length - 4);
+
+                // Hide wallet modal, show lobby
+                document.getElementById('walletModal').classList.add('hidden');
+                document.getElementById('lobbyModal').classList.add('visible');
+
+                // Simulate other players in lobby
+                simulateLobbyPlayers();
+
+            } catch (error) {
+                console.error('Wallet connection error:', error);
+                alert('Connection failed. Using demo mode.');
+                gameState.wallet = '0x' + Math.random().toString(36).substring(2, 15);
+                gameState.connected = true;
+                document.getElementById('walletModal').classList.add('hidden');
+                document.getElementById('lobbyModal').classList.add('visible');
+                simulateLobbyPlayers();
             }
-        );
+        };
 
-        playerGroup.position.set(0, 0, 0);
+        window.connectAsAI = function() {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            if (!apiKey || apiKey.length < 10) {
+                alert('Please enter a valid API key');
+                return;
+            }
 
-        // Collision objects
-        const collisionObjects = [];
-        const buildingModels = [];
+            gameState.connected = true;
+            gameState.isAI = true;
+            gameState.apiKey = apiKey;
+            gameState.wallet = 'AI-' + Math.random().toString(36).substring(2, 10);
 
-        function loadBuilding(x, z, scale, rotation = 0) {
-            loader.load(
-                'https://threejs.org/examples/models/gltf/LittlestTokyo.glb',
-                (gltf) => {
-                    const building = gltf.scene;
-                    building.scale.set(scale * 0.01, scale * 0.01, scale * 0.01);
-                    building.position.set(x, 0, z);
-                    building.rotation.y = rotation;
+            document.getElementById('walletAddress').textContent = 'AI Player';
+            document.getElementById('walletModal').classList.add('hidden');
+            document.getElementById('lobbyModal').classList.add('visible');
 
-                    building.traverse((child) => {
-                        if (child.isMesh) {
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                        }
-                    });
+            simulateLobbyPlayers();
+        };
 
-                    scene.add(building);
-                    buildingModels.push(building);
-                    collisionObjects.push({ x, z, radius: scale * 5 });
-                },
-                undefined,
-                (error) => {
-                    console.log('Building load error - skipping');
-                }
-            );
+        function simulateLobbyPlayers() {
+            const playerList = document.getElementById('playerList');
+            const count = Math.floor(Math.random() * 5) + 1;
+            gameState.players = [{
+                id: gameState.wallet,
+                wallet: gameState.wallet,
+                isAI: gameState.isAI,
+                stake: 0.01
+            }];
+
+            for (let i = 0; i < count; i++) {
+                const isAI = Math.random() > 0.7;
+                gameState.players.push({
+                    id: (isAI ? 'AI-' : '0x') + Math.random().toString(36).substring(2, 10),
+                    wallet: (isAI ? 'AI-' : '0x') + Math.random().toString(36).substring(2, 10),
+                    isAI: isAI,
+                    stake: 0.01
+                });
+            }
+
+            updateLobbyUI();
         }
 
-        const buildingPositions = [
-            { x: 30, z: 30, scale: 3, rotation: 0 },
-            { x: -30, z: 30, scale: 3, rotation: Math.PI / 2 },
-            { x: 30, z: -30, scale: 3, rotation: Math.PI },
-            { x: -30, z: -30, scale: 3, rotation: -Math.PI / 2 },
-            { x: 50, z: 0, scale: 4, rotation: 0 },
-            { x: -50, z: 0, scale: 4, rotation: 0 },
-            { x: 0, z: 50, scale: 4, rotation: Math.PI / 4 },
-            { x: 0, z: -50, scale: 4, rotation: -Math.PI / 4 }
-        ];
+        function updateLobbyUI() {
+            const playerList = document.getElementById('playerList');
+            const playerCount = document.getElementById('playerCount');
 
-        buildingPositions.forEach(pos => {
-            loadBuilding(pos.x, pos.z, pos.scale, pos.rotation);
-        });
+            playerCount.textContent = gameState.players.length;
+            playerList.innerHTML = '';
 
-        // Particles
-        const particleCount = 500;
-        const particleGeometry = new THREE.BufferGeometry();
-        const particlePositions = new Float32Array(particleCount * 3);
-        const particleVelocities = [];
-
-        for (let i = 0; i < particleCount; i++) {
-            particlePositions[i * 3] = (Math.random() - 0.5) * 80;
-            particlePositions[i * 3 + 1] = Math.random() * 50;
-            particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 80;
-
-            particleVelocities.push({
-                x: (Math.random() - 0.5) * 0.02,
-                y: (Math.random() - 0.5) * 0.02,
-                z: (Math.random() - 0.5) * 0.02
+            gameState.players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item' + (player.isAI ? ' ai' : '');
+                const displayName = player.isAI ?
+                    '🤖 AI-' + player.id.substring(3, 9) :
+                    player.wallet.substring(0, 6) + '...' + player.wallet.substring(player.wallet.length - 4);
+                div.innerHTML = `<span>${displayName}</span><span>${player.stake} ETH</span>`;
+                playerList.appendChild(div);
             });
         }
 
-        particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        window.joinGame = function() {
+            const stakeInput = document.getElementById('stakeAmount');
+            gameState.stake = parseFloat(stakeInput.value) || 0.01;
+            gameState.inLobby = false;
+            gameState.inGame = true;
 
-        const particleMaterial = new THREE.PointsMaterial({
-            color: 0xffffff,
-            size: 0.1,
-            transparent: true,
-            opacity: 0.6,
-            blending: THREE.AdditiveBlending
-        });
+            document.getElementById('stakeDisplay').textContent = gameState.stake + ' ETH';
+            document.getElementById('lobbyModal').classList.remove('visible');
+            document.getElementById('gameHUD').classList.add('visible');
+            document.getElementById('playersAlive').textContent = gameState.players.length;
 
-        const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
-        scene.add(particleSystem);
+            // Start game
+            initGame();
+        };
 
-        updateLoadingProgress();
+        // ==================== GAME INITIALIZATION ====================
+        let scene, camera, renderer, composer;
+        let playerGroup, playerMixer;
+        let gun, bullets = [];
+        let otherPlayers = [];
+        let coins = [];
 
-        // Movement system
-        const keys = { w: false, a: false, s: false, d: false, shift: false, space: false };
+        function initGame() {
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            scene.fog = new THREE.Fog(0x000000, 0, 80);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 10, 15);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            document.body.appendChild(renderer.domElement);
+
+            // Post-processing
+            composer = new EffectComposer(renderer);
+            composer.addPass(new RenderPass(scene, camera));
+            const bloomPass = new UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                1.5, 0.4, 0.85
+            );
+            composer.addPass(bloomPass);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            mainLight.position.set(0, 80, 10);
+            mainLight.castShadow = true;
+            scene.add(mainLight);
+
+            // Platform
+            const platformRadius = 37.5;
+            const platformGeometry = new THREE.CircleGeometry(platformRadius, 64);
+            const platformMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1a2a3a,
+                roughness: 0.3,
+                metalness: 0.7
+            });
+            const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+            platform.rotation.x = -Math.PI / 2;
+            platform.position.y = 0;
+            platform.receiveShadow = true;
+            scene.add(platform);
+
+            // Ring
+            const ringGeometry = new THREE.RingGeometry(platformRadius - 0.5, platformRadius + 0.5, 64);
+            const ringMaterial = new THREE.MeshStandardMaterial({
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 1.5,
+                transparent: true,
+                opacity: 0.8
+            });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.y = 0.1;
+            scene.add(ring);
+
+            // Load player
+            playerGroup = new THREE.Group();
+            scene.add(playerGroup);
+
+            const loader = new GLTFLoader();
+            loader.load(
+                'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
+                (gltf) => {
+                    const model = gltf.scene;
+                    model.scale.set(0.75, 0.75, 0.75);
+                    playerGroup.add(model);
+
+                    if (gltf.animations.length) {
+                        playerMixer = new THREE.AnimationMixer(model);
+                        const idleClip = THREE.AnimationClip.findByName(gltf.animations, 'Idle');
+                        if (idleClip) {
+                            const action = playerMixer.clipAction(idleClip);
+                            action.play();
+                        }
+                    }
+
+                    // Add gun
+                    createGun();
+
+                    document.getElementById('loading').classList.add('hidden');
+                },
+                undefined,
+                () => {
+                    // Fallback
+                    const fallback = new THREE.Mesh(
+                        new THREE.CapsuleGeometry(0.5, 1.5),
+                        new THREE.MeshStandardMaterial({ color: 0x00ffff })
+                    );
+                    fallback.position.y = 1;
+                    playerGroup.add(fallback);
+                    createGun();
+                    document.getElementById('loading').classList.add('hidden');
+                }
+            );
+
+            // Spawn other players
+            spawnOtherPlayers();
+
+            // Input
+            setupInput();
+
+            // Start animation
+            animate();
+        }
+
+        function createGun() {
+            gun = new THREE.Group();
+
+            // Simple gun shape
+            const barrel = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, 1, 8),
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+            );
+            barrel.rotation.z = Math.PI / 2;
+            barrel.position.x = 0.5;
+            gun.add(barrel);
+
+            const handle = new THREE.Mesh(
+                new THREE.BoxGeometry(0.1, 0.3, 0.15),
+                new THREE.MeshStandardMaterial({ color: 0x222222 })
+            );
+            handle.position.set(0, -0.15, 0);
+            gun.add(handle);
+
+            gun.position.set(0.3, 0.5, -0.3);
+            playerGroup.add(gun);
+        }
+
+        function spawnOtherPlayers() {
+            // Spawn other players around the platform
+            gameState.players.forEach((player, index) => {
+                if (player.id === gameState.wallet) return;
+
+                const angle = (index / gameState.players.length) * Math.PI * 2;
+                const radius = 20;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+
+                // Create simple player representation
+                const otherPlayer = new THREE.Group();
+                const body = new THREE.Mesh(
+                    new THREE.CapsuleGeometry(0.5, 1.5),
+                    new THREE.MeshStandardMaterial({
+                        color: player.isAI ? 0xff00ff : 0x00ffff
+                    })
+                );
+                body.position.y = 1;
+                otherPlayer.add(body);
+
+                // Name label
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(player.isAI ? '🤖 AI' : player.wallet.substring(0, 8), 128, 40);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const label = new THREE.Mesh(
+                    new THREE.PlaneGeometry(2, 0.5),
+                    new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+                );
+                label.position.y = 3;
+                otherPlayer.add(label);
+
+                otherPlayer.position.set(x, 0, z);
+                otherPlayer.userData = {
+                    id: player.id,
+                    health: 100,
+                    isAI: player.isAI,
+                    stake: player.stake
+                };
+
+                scene.add(otherPlayer);
+                otherPlayers.push(otherPlayer);
+            });
+        }
+
+        // ==================== INPUT ====================
+        const keys = { w: false, a: false, s: false, d: false, shift: false };
         const moveSpeed = 0.15;
-        const sprintMultiplier = 2;
-        const playerVelocity = new THREE.Vector3();
+        let mouseDown = false;
+        let shootCooldown = 0;
 
-        // Jump system
-        let isJumping = false;
-        let verticalVelocity = 0;
-        const jumpStrength = 0.35;
-        const gravity = 0.015;
-        const groundLevel = 0;
+        function setupInput() {
+            document.addEventListener('keydown', (e) => {
+                const key = e.key.toLowerCase();
+                if (keys.hasOwnProperty(key)) keys[key] = true;
+                if (e.key === 'Shift') keys.shift = true;
+            });
 
-        document.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-            if (keys.hasOwnProperty(key)) {
-                keys[key] = true;
-            }
-            if (e.key === 'Shift') keys.shift = true;
-            if (e.key === ' ' && !isJumping) {
-                keys.space = true;
-                isJumping = true;
-                verticalVelocity = jumpStrength;
-            }
-        });
+            document.addEventListener('keyup', (e) => {
+                const key = e.key.toLowerCase();
+                if (keys.hasOwnProperty(key)) keys[key] = false;
+                if (e.key === 'Shift') keys.shift = false;
+            });
 
-        document.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            if (keys.hasOwnProperty(key)) {
-                keys[key] = false;
-            }
-            if (e.key === 'Shift') keys.shift = false;
-            if (e.key === ' ') keys.space = false;
-        });
+            document.addEventListener('mousedown', () => { mouseDown = true; });
+            document.addEventListener('mouseup', () => { mouseDown = false; });
 
-        // Mobile joystick
-        const joystick = document.getElementById('joystick');
-        const joystickKnob = document.getElementById('joystick-knob');
-        let joystickActive = false;
-        let joystickVector = { x: 0, y: 0 };
-
-        function handleTouch(e) {
-            e.preventDefault();
-            if (e.type === 'touchstart' || e.type === 'touchmove') {
-                joystickActive = true;
-                const touch = e.touches[0];
-                const rect = joystick.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-
-                let deltaX = touch.clientX - centerX;
-                let deltaY = touch.clientY - centerY;
-
-                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                const maxDistance = rect.width / 3;
-
-                if (distance > maxDistance) {
-                    deltaX = (deltaX / distance) * maxDistance;
-                    deltaY = (deltaY / distance) * maxDistance;
+            // Lock pointer for FPS controls
+            document.addEventListener('click', () => {
+                if (gameState.inGame) {
+                    document.body.requestPointerLock();
                 }
+            });
 
-                joystickKnob.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-
-                joystickVector.x = deltaX / maxDistance;
-                joystickVector.y = deltaY / maxDistance;
-            } else if (e.type === 'touchend' || e.type === 'touchcancel') {
-                joystickActive = false;
-                joystickKnob.style.transform = 'translate(-50%, -50%)';
-                joystickVector.x = 0;
-                joystickVector.y = 0;
-            }
+            document.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement && gameState.inGame) {
+                    camera.rotation.y -= e.movementX * 0.002;
+                    camera.rotation.x -= e.movementY * 0.002;
+                    camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+                }
+            });
         }
 
-        joystick.addEventListener('touchstart', handleTouch, { passive: false });
-        joystick.addEventListener('touchmove', handleTouch, { passive: false });
-        joystick.addEventListener('touchend', handleTouch, { passive: false });
-        joystick.addEventListener('touchcancel', handleTouch, { passive: false });
+        // ==================== SHOOTING ====================
+        function shoot() {
+            if (gameState.ammo <= 0 || shootCooldown > 0) return;
 
-        function checkCollision(newX, newZ) {
-            for (const obj of collisionObjects) {
-                const dx = newX - obj.x;
-                const dz = newZ - obj.z;
-                const distance = Math.sqrt(dx * dx + dz * dz);
-                if (distance < obj.radius + 1) {
-                    return true;
-                }
+            gameState.ammo--;
+            shootCooldown = 10;
+            document.getElementById('ammoCount').textContent = gameState.ammo;
+
+            // Reload
+            if (gameState.ammo === 0) {
+                setTimeout(() => {
+                    gameState.ammo = gameState.maxAmmo;
+                    document.getElementById('ammoCount').textContent = gameState.ammo;
+                }, 2000);
             }
-            return false;
+
+            // Create bullet
+            const bullet = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1),
+                new THREE.MeshBasicMaterial({ color: 0xffff00 })
+            );
+
+            bullet.position.copy(camera.position);
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            bullet.userData.velocity = direction.multiplyScalar(2);
+            bullet.userData.life = 100;
+
+            scene.add(bullet);
+            bullets.push(bullet);
+
+            // Check hits
+            checkBulletHits(bullet);
         }
 
-        let lastTime = performance.now();
-        let frames = 0;
-        let fps = 60;
+        function checkBulletHits(bullet) {
+            otherPlayers.forEach(player => {
+                const dist = bullet.position.distanceTo(player.position);
+                if (dist < 2 && player.userData.health > 0) {
+                    // Hit!
+                    player.userData.health -= 10;
+
+                    if (player.userData.health <= 0) {
+                        // Player died - drop coins
+                        dropCoins(player);
+                        player.visible = false;
+
+                        // Update alive count
+                        const alive = otherPlayers.filter(p => p.userData.health > 0).length + 1;
+                        document.getElementById('playersAlive').textContent = alive;
+
+                        if (alive === 1) {
+                            // You won!
+                            showVictory();
+                        }
+                    }
+                }
+            });
+        }
+
+        function dropCoins(player) {
+            // Create coin drop
+            const coinGroup = new THREE.Group();
+
+            const coinGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 16);
+            const coinMat = new THREE.MeshStandardMaterial({
+                color: 0xffd700,
+                emissive: 0xffaa00,
+                emissiveIntensity: 0.5,
+                metalness: 0.8
+            });
+            const coin = new THREE.Mesh(coinGeo, coinMat);
+            coin.rotation.x = Math.PI / 2;
+            coinGroup.add(coin);
+
+            const light = new THREE.PointLight(0xffd700, 2, 10);
+            coinGroup.add(light);
+
+            coinGroup.position.copy(player.position);
+            coinGroup.userData = {
+                playerId: player.userData.id,
+                amount: player.userData.stake,
+                collected: false
+            };
+
+            scene.add(coinGroup);
+            coins.push(coinGroup);
+        }
+
+        function checkCoinCollection() {
+            coins.forEach(coin => {
+                if (coin.userData.collected) return;
+
+                const dist = playerGroup.position.distanceTo(coin.position);
+                if (dist < 3) {
+                    if (!gameState.nearbyCoins) {
+                        // Show popup
+                        gameState.nearbyCoins = coin;
+                        const info = `Player: ${coin.userData.playerId.substring(0, 10)}... | Amount: ${coin.userData.amount} ETH`;
+                        document.getElementById('coinInfo').textContent = info;
+                        document.getElementById('coinPopup').classList.add('visible');
+                    }
+                } else {
+                    if (gameState.nearbyCoins === coin) {
+                        gameState.nearbyCoins = null;
+                        document.getElementById('coinPopup').classList.remove('visible');
+                    }
+                }
+            });
+        }
+
+        window.collectCoins = function() {
+            if (gameState.nearbyCoins) {
+                gameState.collectedCoins += gameState.nearbyCoins.userData.amount;
+                gameState.nearbyCoins.userData.collected = true;
+                scene.remove(gameState.nearbyCoins);
+
+                document.getElementById('coinPopup').classList.remove('visible');
+                document.getElementById('balance').textContent =
+                    (gameState.stake + gameState.collectedCoins).toFixed(3) + ' ETH';
+
+                gameState.nearbyCoins = null;
+            }
+        };
+
+        // ==================== GAME OVER ====================
+        function showVictory() {
+            const totalWinnings = gameState.stake + gameState.collectedCoins;
+            document.getElementById('winnerText').textContent =
+                `You won ${totalWinnings.toFixed(3)} ETH!`;
+            document.getElementById('winnerModal').classList.add('visible');
+            gameState.inGame = false;
+        }
+
+        window.returnToLobby = function() {
+            document.getElementById('winnerModal').classList.remove('visible');
+            document.getElementById('gameHUD').classList.remove('visible');
+            document.getElementById('lobbyModal').classList.add('visible');
+
+            // Reset game
+            gameState.health = 100;
+            gameState.ammo = 30;
+            gameState.collectedCoins = 0;
+
+            // Clear scene
+            otherPlayers.forEach(p => scene.remove(p));
+            otherPlayers = [];
+            bullets.forEach(b => scene.remove(b));
+            bullets = [];
+            coins.forEach(c => scene.remove(c));
+            coins = [];
+
+            simulateLobbyPlayers();
+        };
+
+        // ==================== ANIMATION LOOP ====================
         const clock = new THREE.Clock();
 
-        function animate(currentTime) {
+        function animate() {
             requestAnimationFrame(animate);
+
+            if (!gameState.inGame) return;
 
             const delta = clock.getDelta();
 
-            if (playerMixer) {
-                const safeDelta = Math.min(delta, 0.1);
-                playerMixer.update(safeDelta);
+            if (playerMixer) playerMixer.update(delta);
+
+            // Player movement
+            const velocity = new THREE.Vector3();
+            const speed = keys.shift ? moveSpeed * 2 : moveSpeed;
+
+            if (keys.w) velocity.z -= speed;
+            if (keys.s) velocity.z += speed;
+            if (keys.a) velocity.x -= speed;
+            if (keys.d) velocity.x += speed;
+
+            if (velocity.length() > 0) {
+                velocity.applyEuler(new THREE.Euler(0, camera.rotation.y, 0));
+                playerGroup.position.add(velocity);
             }
 
-            frames++;
-            if (currentTime - lastTime >= 1000) {
-                fps = frames;
-                frames = 0;
-                lastTime = currentTime;
+            // Shooting
+            if (mouseDown && shootCooldown === 0) {
+                shoot();
             }
+            if (shootCooldown > 0) shootCooldown--;
 
-            playerVelocity.set(0, 0, 0);
+            // Update bullets
+            bullets.forEach((bullet, index) => {
+                bullet.position.add(bullet.userData.velocity);
+                bullet.userData.life--;
 
-            const currentSpeed = keys.shift ? moveSpeed * sprintMultiplier : moveSpeed;
+                if (bullet.userData.life <= 0) {
+                    scene.remove(bullet);
+                    bullets.splice(index, 1);
+                }
+            });
 
-            if (keys.w) playerVelocity.z -= currentSpeed;
-            if (keys.s) playerVelocity.z += currentSpeed;
-            if (keys.a) playerVelocity.x -= currentSpeed;
-            if (keys.d) playerVelocity.x += currentSpeed;
+            // Animate coins
+            coins.forEach(coin => {
+                if (!coin.userData.collected) {
+                    coin.position.y = 0.5 + Math.sin(Date.now() * 0.002) * 0.3;
+                    coin.rotation.y += 0.02;
+                }
+            });
 
-            if (joystickActive) {
-                playerVelocity.x += joystickVector.x * currentSpeed * 1.5;
-                playerVelocity.z += joystickVector.y * currentSpeed * 1.5;
-            }
+            // Check coin collection
+            checkCoinCollection();
 
-            const isMoving = playerVelocity.length() > 0;
-
-            if (isMoving) {
-                const newX = playerGroup.position.x + playerVelocity.x;
-                const newZ = playerGroup.position.z + playerVelocity.z;
-
-                if (!checkCollision(newX, newZ)) {
-                    playerGroup.position.x = newX;
-                    playerGroup.position.z = newZ;
-
-                    const targetAngle = Math.atan2(playerVelocity.x, playerVelocity.z);
-                    let angleDiff = targetAngle - playerGroup.rotation.y;
-
-                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-
-                    playerGroup.rotation.y += angleDiff * 0.15;
-
-                    const targetAction = runAction || walkAction;
-
-                    if (targetAction) {
-                        const needsSwitch = !targetAction.isRunning() || targetAction.weight === 0;
-
-                        if (needsSwitch) {
-                            if (idleAction) {
-                                idleAction.stop();
-                                idleAction.weight = 0;
-                            }
-                            if (walkAction && targetAction === runAction) {
-                                walkAction.stop();
-                                walkAction.weight = 0;
-                            }
-
-                            targetAction.reset();
-                            targetAction.setLoop(THREE.LoopRepeat, Infinity);
-                            targetAction.clampWhenFinished = false;
-                            targetAction.timeScale = 1.0;
-                            targetAction.setEffectiveWeight(1);
-                            targetAction.enabled = true;
-                            targetAction.paused = false;
-                            targetAction.play();
-                        }
+            // AI behavior (simple)
+            otherPlayers.forEach(player => {
+                if (player.userData.isAI && player.userData.health > 0) {
+                    // Simple AI: move randomly, occasionally shoot
+                    if (Math.random() < 0.02) {
+                        const angle = Math.random() * Math.PI * 2;
+                        player.position.x += Math.cos(angle) * 0.1;
+                        player.position.z += Math.sin(angle) * 0.1;
                     }
                 }
+            });
 
-                const distanceFromCenter = Math.sqrt(
-                    playerGroup.position.x * playerGroup.position.x +
-                    playerGroup.position.z * playerGroup.position.z
-                );
-                const maxRadius = 33.75;
-
-                if (distanceFromCenter > maxRadius) {
-                    const angle = Math.atan2(playerGroup.position.z, playerGroup.position.x);
-                    playerGroup.position.x = Math.cos(angle) * maxRadius;
-                    playerGroup.position.z = Math.sin(angle) * maxRadius;
-                }
-            }
-
-            // Jump physics
-            if (isJumping) {
-                verticalVelocity -= gravity;
-                playerGroup.position.y += verticalVelocity;
-
-                if (playerGroup.position.y <= groundLevel) {
-                    playerGroup.position.y = groundLevel;
-                    verticalVelocity = 0;
-                    isJumping = false;
-                }
-            }
-
-            if (!isMoving) {
-                if (idleAction) {
-                    const needsSwitch = !idleAction.isRunning() || idleAction.weight === 0;
-
-                    if (needsSwitch) {
-                        if (walkAction) {
-                            walkAction.stop();
-                            walkAction.weight = 0;
-                        }
-                        if (runAction) {
-                            runAction.stop();
-                            runAction.weight = 0;
-                        }
-
-                        idleAction.reset();
-                        idleAction.setLoop(THREE.LoopRepeat, Infinity);
-                        idleAction.clampWhenFinished = false;
-                        idleAction.timeScale = 1.0;
-                        idleAction.setEffectiveWeight(1);
-                        idleAction.enabled = true;
-                        idleAction.paused = false;
-                        idleAction.play();
-                    }
-                }
-            }
-
-            // Animate particles
-            const positions = particleGeometry.attributes.position.array;
-            for (let i = 0; i < particleCount; i++) {
-                positions[i * 3] += particleVelocities[i].x;
-                positions[i * 3 + 1] += particleVelocities[i].y;
-                positions[i * 3 + 2] += particleVelocities[i].z;
-
-                if (Math.abs(positions[i * 3]) > 40) particleVelocities[i].x *= -1;
-                if (positions[i * 3 + 1] > 50 || positions[i * 3 + 1] < 0) particleVelocities[i].y *= -1;
-                if (Math.abs(positions[i * 3 + 2]) > 40) particleVelocities[i].z *= -1;
-            }
-            particleGeometry.attributes.position.needsUpdate = true;
-
-            // Animate lights
-            neonLight1.intensity = 3 + Math.sin(currentTime * 0.003) * 1.5;
-            neonLight2.intensity = 3 + Math.sin(currentTime * 0.002 + 1) * 1.5;
-            neonLight3.intensity = 3 + Math.sin(currentTime * 0.004 + 2) * 1.5;
-            neonLight4.intensity = 3 + Math.sin(currentTime * 0.0025 + 3) * 1.5;
-
-            // Animate loot items
-            lootGroup1.position.y = 0.5 + Math.sin(currentTime * 0.002) * 0.4;
-            lootGroup1.rotation.y = currentTime * 0.0008;
-            borderMesh1.material.opacity = 0.7 + Math.sin(currentTime * 0.003) * 0.2;
-            outerGlowMesh1.material.opacity = 0.2 + Math.sin(currentTime * 0.004) * 0.15;
-            lootLight1.intensity = 1.5 + Math.sin(currentTime * 0.004) * 0.8;
-
-            lootGroup2.position.y = 0.5 + Math.sin(currentTime * 0.002 + 1) * 0.4;
-            lootGroup2.rotation.y = currentTime * 0.0008;
-            borderMesh2.material.opacity = 0.7 + Math.sin(currentTime * 0.003 + 1) * 0.2;
-            outerGlowMesh2.material.opacity = 0.2 + Math.sin(currentTime * 0.004 + 1) * 0.15;
-            lootLight2.intensity = 1.5 + Math.sin(currentTime * 0.004 + 1) * 0.8;
-
-            lootGroup3.position.y = 0.5 + Math.sin(currentTime * 0.002 + 2) * 0.4;
-            lootGroup3.rotation.y = currentTime * 0.0008;
-            borderMesh3.material.opacity = 0.7 + Math.sin(currentTime * 0.003 + 2) * 0.2;
-            outerGlowMesh3.material.opacity = 0.2 + Math.sin(currentTime * 0.004 + 2) * 0.15;
-            lootLight3.intensity = 1.5 + Math.sin(currentTime * 0.004 + 2) * 0.8;
-
-            // Show/hide popups
-            const distToLoot1 = Math.sqrt(
-                Math.pow(playerGroup.position.x - lootPosition1.x, 2) +
-                Math.pow(playerGroup.position.z - lootPosition1.z, 2)
-            );
-            if (distToLoot1 < lootPosition1.radius) {
-                lootPopup1.classList.add('visible');
-            } else {
-                lootPopup1.classList.remove('visible');
-            }
-
-            const distToLoot2 = Math.sqrt(
-                Math.pow(playerGroup.position.x - lootPosition2.x, 2) +
-                Math.pow(playerGroup.position.z - lootPosition2.z, 2)
-            );
-            if (distToLoot2 < lootPosition2.radius) {
-                lootPopup2.classList.add('visible');
-            } else {
-                lootPopup2.classList.remove('visible');
-            }
-
-            const distToLoot3 = Math.sqrt(
-                Math.pow(playerGroup.position.x - lootPosition3.x, 2) +
-                Math.pow(playerGroup.position.z - lootPosition3.z, 2)
-            );
-            if (distToLoot3 < lootPosition3.radius) {
-                lootPopup3.classList.add('visible');
-            } else {
-                lootPopup3.classList.remove('visible');
-            }
-
-            // Camera
-            const cameraOffset = new THREE.Vector3(0, 10, 15);
-            const cameraPosition = playerGroup.position.clone().add(cameraOffset);
-            camera.position.lerp(cameraPosition, 0.05);
-
-            const lookAtTarget = playerGroup.position.clone().add(new THREE.Vector3(0, 2, 0));
-            camera.lookAt(lookAtTarget);
+            // Camera follows player
+            camera.position.x = playerGroup.position.x;
+            camera.position.z = playerGroup.position.z;
+            camera.position.y = playerGroup.position.y + 1.6;
 
             composer.render();
         }
 
+        // Window resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             composer.setSize(window.innerWidth, window.innerHeight);
-
-            const pixelRatio = renderer.getPixelRatio();
-            fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
-            fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
         });
-
-        animate(performance.now());
     </script>
 </body>
 </html>
