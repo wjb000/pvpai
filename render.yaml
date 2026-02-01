@@ -1,0 +1,47 @@
+# Render.com deployment configuration
+services:
+  - type: web
+    name: pvpai-backend
+    env: node
+    region: oregon
+    plan: starter # $7/month (or use 'free' but it sleeps after inactivity)
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: FRONTEND_URL
+        sync: false # Set in Render dashboard
+      - key: DB_HOST
+        sync: false # From Supabase
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: ETH_RPC_URL
+        sync: false
+      - key: SOLANA_RPC_URL
+        value: https://api.mainnet-beta.solana.com
+      - key: BASE_RPC_URL
+        value: https://mainnet.base.org
+      - key: POLYGON_RPC_URL
+        value: https://polygon-rpc.com
+      - key: ETH_CONTRACT_ADDRESS
+        sync: false
+      - key: SOL_CONTRACT_ADDRESS
+        sync: false
+      - key: BASE_CONTRACT_ADDRESS
+        sync: false
+      - key: POLYGON_CONTRACT_ADDRESS
+        sync: false
+      - key: PAYOUT_PRIVATE_KEY
+        sync: false
+      - key: PLATFORM_FEE_WALLET
+        sync: false
