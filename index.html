@@ -1758,3 +1758,14 @@
     </script>
 </body>
 </html>
+
+<script>
+// Auto-hide loading screen after 2 seconds
+setTimeout(() => {
+    const loading = document.getElementById('loading');
+    if (loading) {
+        loading.style.display = 'none';
+        console.log('✅ Loading screen hidden');
+    }
+}, 2000);
+</script>
