@@ -1240,7 +1240,10 @@
             const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
             mainLight.position.set(0, 80, 10);
             mainLight.castShadow = true;
-            mainLight.shadow.camera.set(-70, 70, 70, -70);
+            mainLight.shadow.camera.left = -70;
+            mainLight.shadow.camera.right = 70;
+            mainLight.shadow.camera.top = 70;
+            mainLight.shadow.camera.bottom = -70;
             mainLight.shadow.mapSize.setScalar(2048);
             scene.add(mainLight);
 
