@@ -272,22 +272,26 @@
             z-index: 9998;
         }
         .dashboard-header {
-            background: #0a0a0a;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0505 50%, #0a0a0a 100%);
             padding: 25px 40px;
-            border-bottom: 1px solid #ff0000;
+            border-bottom: 2px solid #ff0000;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 30px rgba(255,0,0,0.3), 0 0 80px rgba(255,0,0,0.1);
         }
         .dashboard-header h1 {
-            font-size: 28px;
+            font-size: 32px;
             color: #fff;
             margin-bottom: 10px;
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
             font-weight: 900;
-            text-shadow: 0 0 20px rgba(255,0,0,0.5);
+            text-shadow: 0 0 30px rgba(255,0,0,0.8), 0 0 60px rgba(255,0,0,0.4);
+            background: linear-gradient(90deg, #fff, #ff4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .user-badge {
             display: inline-flex;
@@ -331,12 +335,18 @@
         }
 
         .create-game-card {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-left: 3px solid #ff0000;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a0505 100%);
+            border: 1px solid #444;
+            border-left: 4px solid #ff0000;
             border-radius: 0;
-            padding: 30px;
+            padding: 35px;
             margin-bottom: 40px;
+            box-shadow: 0 0 40px rgba(255,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .create-game-card:hover {
+            border-left-width: 6px;
+            box-shadow: 0 0 60px rgba(255,0,0,0.2);
         }
         .stake-input-row {
             display: grid;
@@ -366,22 +376,49 @@
             font-family: 'Courier New', monospace;
         }
         .color-picker {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
-            gap: 8px;
-            margin-top: 10px;
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 15px auto;
         }
-        .color-btn {
-            aspect-ratio: 1;
-            border-radius: 0;
-            border: 2px solid #333;
+        .color-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            background: conic-gradient(
+                from 0deg,
+                #ff0000 0deg,
+                #ff6600 36deg,
+                #ffff00 72deg,
+                #00ff00 108deg,
+                #00ffff 144deg,
+                #0000ff 180deg,
+                #ff00ff 216deg,
+                #ff1493 252deg,
+                #9370db 288deg,
+                #ffffff 324deg,
+                #ff0000 360deg
+            );
+            border: 3px solid #ff0000;
+            box-shadow: 0 0 20px rgba(255,0,0,0.5);
             cursor: pointer;
+        }
+        .color-selector {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            background: var(--selected-color, #00ffff);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 20px var(--selected-color, #00ffff);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
             transition: all 0.2s;
         }
-        .color-btn:hover { transform: scale(1.1); border-color: #ff0000; }
-        .color-btn.selected {
-            border-color: #ff0000;
-            box-shadow: 0 0 15px rgba(255,0,0,0.6);
+        .color-wheel:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255,0,0,0.8);
         }
 
         .create-btn {
@@ -948,16 +985,9 @@
                 <div class="input-group">
                     <label>🎨 Robot Color</label>
                     <div class="color-picker">
-                        <div class="color-btn selected" style="background:#00ffff" data-color="0x00ffff" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#ff00ff" data-color="0xff00ff" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#00ff00" data-color="0x00ff00" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#ffff00" data-color="0xffff00" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#ff6600" data-color="0xff6600" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#ff0000" data-color="0xff0000" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#0000ff" data-color="0x0000ff" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#ffffff" data-color="0xffffff" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#ff1493" data-color="0xff1493" onclick="selectColor(this)"></div>
-                        <div class="color-btn" style="background:#9370db" data-color="0x9370db" onclick="selectColor(this)"></div>
+                        <div class="color-wheel" id="colorWheel" onclick="selectColorFromWheel(event)">
+                            <div class="color-selector" id="colorSelector"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -1076,6 +1106,7 @@
 
         let scene, camera, renderer, composer, clock;
         let playerGroup, playerModel, playerMixer, gun, muzzleFlash;
+        let walkAction = null, idleAction = null, runAction = null;
         let otherPlayers = [], bullets = [], coins = [];
         let keys = { w: false, a: false, s: false, d: false, shift: false };
         let mouseX = 0, mouseY = 0, mouseDown = false, shootCooldown = 0;
@@ -1157,11 +1188,81 @@
         }
 
         // ==================== COLOR SELECTION ====================
-        window.selectColor = function(el) {
-            document.querySelectorAll('.color-btn').forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-            gameState.robotColor = parseInt(el.dataset.color);
+        // Color wheel selection
+        window.selectColorFromWheel = function(event) {
+            const wheel = document.getElementById('colorWheel');
+            const selector = document.getElementById('colorSelector');
+            const rect = wheel.getBoundingClientRect();
+
+            // Get click position relative to wheel center
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+
+            // Calculate angle (0-360 degrees)
+            let angle = Math.atan2(clickY - centerY, clickX - centerX) * (180 / Math.PI);
+            angle = (angle + 90 + 360) % 360; // Normalize to 0-360, starting from top
+
+            // Calculate distance from center
+            const distance = Math.sqrt(Math.pow(clickX - centerX, 2) + Math.pow(clickY - centerY, 2));
+            const radius = rect.width / 2;
+
+            // Only select if click is within the wheel
+            if (distance <= radius && distance >= radius * 0.3) {
+                // Map angle to color
+                const colors = [
+                    { angle: 0, hex: 0xff0000, css: '#ff0000' },      // Red
+                    { angle: 36, hex: 0xff6600, css: '#ff6600' },     // Orange
+                    { angle: 72, hex: 0xffff00, css: '#ffff00' },     // Yellow
+                    { angle: 108, hex: 0x00ff00, css: '#00ff00' },    // Green
+                    { angle: 144, hex: 0x00ffff, css: '#00ffff' },    // Cyan
+                    { angle: 180, hex: 0x0000ff, css: '#0000ff' },    // Blue
+                    { angle: 216, hex: 0xff00ff, css: '#ff00ff' },    // Magenta
+                    { angle: 252, hex: 0xff1493, css: '#ff1493' },    // Pink
+                    { angle: 288, hex: 0x9370db, css: '#9370db' },    // Purple
+                    { angle: 324, hex: 0xffffff, css: '#ffffff' }     // White
+                ];
+
+                // Find closest color
+                let closestColor = colors[0];
+                let minDiff = Math.abs(angle - colors[0].angle);
+
+                for (const color of colors) {
+                    let diff = Math.abs(angle - color.angle);
+                    if (diff > 180) diff = 360 - diff;
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestColor = color;
+                    }
+                }
+
+                // Update selected color
+                gameState.robotColor = closestColor.hex;
+                selector.style.setProperty('--selected-color', closestColor.css);
+                selector.style.background = closestColor.css;
+
+                // Position selector at clicked angle
+                const selectorAngle = (closestColor.angle - 90) * (Math.PI / 180);
+                const selectorRadius = radius * 0.75;
+                const selectorX = centerX + Math.cos(selectorAngle) * selectorRadius;
+                const selectorY = centerY + Math.sin(selectorAngle) * selectorRadius;
+
+                selector.style.left = selectorX + 'px';
+                selector.style.top = selectorY + 'px';
+            }
         };
+
+        // Initialize color selector position
+        window.addEventListener('DOMContentLoaded', () => {
+            const selector = document.getElementById('colorSelector');
+            if (selector) {
+                selector.style.setProperty('--selected-color', '#00ffff');
+                selector.style.background = '#00ffff';
+                selector.style.left = '90px';
+                selector.style.top = '60px';
+            }
+        });
 
         // ==================== LOBBIES ====================
         async function loadLobbies() {
@@ -1243,12 +1344,9 @@
             gameState.collected = 0;
             gameState.kills = 0;
 
-            // Update HUD
-            const displayWallet = gameState.isAI ?
-                '🤖 AI' :
-                gameState.wallet.substring(0, 6) + '...';
             // Update minimal HUD
             document.getElementById('hudCollected').textContent = '0.00';
+            // Players alive will be updated from backend
             document.getElementById('playersAlive').textContent = '1';
 
             initGame();
@@ -1340,7 +1438,7 @@
 
             createPlatform();
             loadPlayer();
-            spawnOtherPlayers();
+            // spawnOtherPlayers(); // Disabled - real players will come from backend
             setupInput();
 
             clock = new THREE.Clock();
@@ -1350,11 +1448,12 @@
         function createPlatform() {
             const r = 37.5;
 
-            // Hexagonal texture
+            // Enhanced cyberpunk texture from site
             const canvas = document.createElement('canvas');
             canvas.width = canvas.height = 2048;
             const ctx = canvas.getContext('2d');
 
+            // Sleek dark base with blue glow
             const grad = ctx.createRadialGradient(1024,1024,0,1024,1024,1024);
             grad.addColorStop(0,'#1a2a3a');
             grad.addColorStop(0.5,'#0f1520');
@@ -1362,6 +1461,7 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0,0,2048,2048);
 
+            // Draw futuristic hexagonal tiles
             const hs = 60, hh = hs * Math.sqrt(3);
             for(let row=-2; row<32; row++) {
                 for(let col=-2; col<32; col++) {
@@ -1378,8 +1478,60 @@
                     }
                     ctx.closePath();
                     ctx.stroke();
+
+                    // Add glowing center
+                    const centerGlow = ctx.createRadialGradient(x, y, 0, x, y, hs * 0.4);
+                    centerGlow.addColorStop(0, 'rgba(0, 217, 255, 0.3)');
+                    centerGlow.addColorStop(1, 'rgba(0, 217, 255, 0)');
+                    ctx.fillStyle = centerGlow;
+                    ctx.fill();
                 }
             }
+
+            ctx.shadowBlur = 0;
+
+            // Draw energy conduits (glowing lines)
+            ctx.strokeStyle = '#00ffaa';
+            ctx.lineWidth = 4;
+            ctx.globalAlpha = 0.8;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#00ffaa';
+
+            // Horizontal energy lines
+            for (let y = 200; y < 2048; y += 400) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(2048, y);
+                ctx.stroke();
+
+                // Add energy pulses
+                for (let x = 0; x < 2048; x += 150) {
+                    ctx.fillStyle = '#00ffaa';
+                    ctx.globalAlpha = 0.8;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Vertical energy lines
+            for (let x = 200; x < 2048; x += 400) {
+                ctx.globalAlpha = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, 2048);
+                ctx.stroke();
+
+                // Add energy pulses
+                for (let y = 0; y < 2048; y += 150) {
+                    ctx.fillStyle = '#00ffaa';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            ctx.shadowBlur = 0;
 
             const tex = new THREE.CanvasTexture(canvas);
             const platform = new THREE.Mesh(
@@ -1393,21 +1545,22 @@
             platform.receiveShadow = true;
             scene.add(platform);
 
-            // Ring
+            // Glowing ring around edge
             const ring = new THREE.Mesh(
                 new THREE.RingGeometry(r-0.5,r+0.5,64),
                 new THREE.MeshStandardMaterial({
-                    color:0xff0000, emissive:0xff0000, emissiveIntensity:1.5,
-                    transparent:true, opacity:0.8
+                    color:0x00ccff, emissive:0x00ccff, emissiveIntensity:1.5,
+                    transparent:true, opacity:0.8, side:THREE.DoubleSide
                 })
             );
             ring.rotation.x = -Math.PI/2;
             ring.position.y = 0.1;
             scene.add(ring);
 
+            // Add point lights around the ring for glow effect
             for(let i=0;i<16;i++) {
                 const a = (i/16)*Math.PI*2;
-                const light = new THREE.PointLight(0xff0000, 0.5, 10);
+                const light = new THREE.PointLight(0x00ccff, 0.5, 10);
                 light.position.set(Math.cos(a)*r, 0.5, Math.sin(a)*r);
                 scene.add(light);
             }
@@ -1460,14 +1613,31 @@
                     playerGroup.add(playerModel);
 
                     // Enable all animations
-                    if(gltf.animations.length) {
+                    if(gltf.animations && gltf.animations.length) {
                         playerMixer = new THREE.AnimationMixer(playerModel);
+
+                        console.log('Available animations:', gltf.animations.map(a => a.name));
+
                         gltf.animations.forEach(clip => {
+                            const name = clip.name;
                             const action = playerMixer.clipAction(clip);
-                            if(clip.name === 'Idle' || clip.name === 'idle') {
-                                action.play();
+                            action.setLoop(THREE.LoopRepeat);
+
+                            // RobotExpressive model uses these animation names
+                            if(name === 'Walking') {
+                                walkAction = action;
+                            } else if(name === 'Idle') {
+                                idleAction = action;
+                            } else if(name === 'Running') {
+                                runAction = action;
                             }
                         });
+
+                        // Start with idle animation
+                        if(idleAction) {
+                            idleAction.reset();
+                            idleAction.play();
+                        }
                     }
 
                     createGun();
@@ -1637,16 +1807,21 @@
             }
 
             const bullet = new THREE.Mesh(
-                new THREE.SphereGeometry(0.1),
-                new THREE.MeshBasicMaterial({color:0xffff00})
+                new THREE.SphereGeometry(0.15),
+                new THREE.MeshBasicMaterial({color:0xffff00, emissive:0xffff00})
             );
 
+            // Spawn bullet from gun position
             bullet.position.copy(playerGroup.position);
             bullet.position.y += 1.5;
 
-            const dir = new THREE.Vector3(Math.sin(mouseX), Math.sin(mouseY), -Math.cos(mouseX)).normalize();
-            bullet.userData.velocity = dir.multiplyScalar(3);
-            bullet.userData.life = 60;
+            // Shoot in the direction the camera is looking (where crosshair points)
+            const dir = new THREE.Vector3();
+            camera.getWorldDirection(dir);
+            dir.normalize();
+
+            bullet.userData.velocity = dir.multiplyScalar(4);
+            bullet.userData.life = 100;
 
             scene.add(bullet);
             bullets.push(bullet);
@@ -1788,7 +1963,9 @@
             if(keys.a) vel.x -= spd;
             if(keys.d) vel.x += spd;
 
-            if(vel.length() > 0) {
+            const isMoving = vel.length() > 0;
+
+            if(isMoving) {
                 vel.applyEuler(new THREE.Euler(0, mouseX, 0));
                 playerGroup.position.add(vel);
 
@@ -1798,9 +1975,39 @@
                     playerGroup.position.x = Math.cos(a)*33;
                     playerGroup.position.z = Math.sin(a)*33;
                 }
+
+                // Switch to run or walk animation
+                const targetAction = keys.shift ? (runAction || walkAction) : (walkAction || runAction);
+                if(targetAction) {
+                    const isPlaying = targetAction.isScheduled() && !targetAction.paused;
+                    if(!isPlaying) {
+                        if(idleAction) idleAction.stop();
+                        if(walkAction && targetAction !== walkAction) walkAction.stop();
+                        if(runAction && targetAction !== runAction) runAction.stop();
+                        targetAction.reset();
+                        targetAction.play();
+                    }
+                }
+            } else {
+                // Switch to idle animation
+                if(idleAction) {
+                    const isIdlePlaying = idleAction.isScheduled() && !idleAction.paused;
+                    if(!isIdlePlaying) {
+                        if(walkAction) walkAction.stop();
+                        if(runAction) runAction.stop();
+                        idleAction.reset();
+                        idleAction.play();
+                    }
+                }
             }
 
             if(playerModel) playerModel.rotation.y = mouseX + Math.PI;
+
+            // Update gun rotation for aiming
+            if(gun) {
+                gun.rotation.y = Math.PI/2;
+                gun.rotation.x = -mouseY * 0.5; // Tilt gun up/down with mouse
+            }
 
             // Shooting
             if(mouseDown && shootCooldown===0) shoot();
