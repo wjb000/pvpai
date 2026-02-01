@@ -161,6 +161,30 @@
             font-size: 18px;
             text-align: center;
         }
+        .color-picker-section {
+            margin-bottom: 30px;
+        }
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .color-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .color-option.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
         .players-waiting {
             background: rgba(0, 0, 0, 0.3);
             padding: 20px;
@@ -481,6 +505,22 @@
                 <p class="info-text">Platform fee: 5% of total pot</p>
             </div>
 
+            <div class="color-picker-section">
+                <label>Choose Robot Color</label>
+                <div class="color-options">
+                    <div class="color-option selected" style="background: #00ffff" data-color="0x00ffff" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #ff00ff" data-color="0xff00ff" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #00ff00" data-color="0x00ff00" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #ffff00" data-color="0xffff00" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #ff6600" data-color="0xff6600" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #ff0000" data-color="0xff0000" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #0000ff" data-color="0x0000ff" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #ffffff" data-color="0xffffff" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #ff1493" data-color="0xff1493" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #9370db" data-color="0x9370db" onclick="selectColor(this)"></div>
+                </div>
+            </div>
+
             <div class="players-waiting">
                 <h3>Players Waiting (<span id="playerCount">0</span>/10)</h3>
                 <div class="player-list" id="playerList"></div>
@@ -563,7 +603,20 @@
             maxAmmo: 30,
             stake: 0.01,
             collectedCoins: 0,
-            nearbyCoins: null
+            nearbyCoins: null,
+            robotColor: 0x00ffff
+        };
+
+        // ==================== COLOR SELECTION ====================
+        window.selectColor = function(element) {
+            // Remove selected from all
+            document.querySelectorAll('.color-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            // Add selected to clicked
+            element.classList.add('selected');
+            // Store color
+            gameState.robotColor = parseInt(element.getAttribute('data-color'));
         };
 
         // ==================== WALLET CONNECTION ====================
@@ -779,6 +832,15 @@
                     model.scale.set(0.75, 0.75, 0.75);
                     playerGroup.add(model);
 
+                    // Apply selected color
+                    model.traverse((child) => {
+                        if (child.isMesh && child.material) {
+                            child.material.color.setHex(gameState.robotColor);
+                            child.material.emissive.setHex(gameState.robotColor);
+                            child.material.emissiveIntensity = 0.3;
+                        }
+                    });
+
                     if (gltf.animations.length) {
                         playerMixer = new THREE.AnimationMixer(model);
                         const idleClip = THREE.AnimationClip.findByName(gltf.animations, 'Idle');
@@ -798,7 +860,11 @@
                     // Fallback
                     const fallback = new THREE.Mesh(
                         new THREE.CapsuleGeometry(0.5, 1.5),
-                        new THREE.MeshStandardMaterial({ color: 0x00ffff })
+                        new THREE.MeshStandardMaterial({
+                            color: gameState.robotColor,
+                            emissive: gameState.robotColor,
+                            emissiveIntensity: 0.3
+                        })
                     );
                     fallback.position.y = 1;
                     playerGroup.add(fallback);
