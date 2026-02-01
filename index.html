@@ -50,119 +50,164 @@
             letter-spacing: 2px;
         }
 
-        /* WALLET MODAL */
+        /* WALLET MODAL - BADASS DARK THEME */
         #walletModal {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.98);
+            background: radial-gradient(circle at center, rgba(20,0,0,0.95) 0%, rgba(0,0,0,0.98) 100%);
+            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
         }
         .wallet-container {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 50px;
-            border-radius: 20px;
-            border: 3px solid #00ccff;
-            box-shadow: 0 0 60px rgba(0,204,255,0.6);
-            max-width: 700px;
+            background: linear-gradient(145deg, #0a0a0a 0%, #1a0000 100%);
+            padding: 60px 50px;
+            border-radius: 0;
+            border: 1px solid #ff0000;
+            box-shadow: 0 0 100px rgba(255,0,0,0.3), inset 0 0 50px rgba(0,0,0,0.8);
+            max-width: 600px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+            position: relative;
+        }
+        .wallet-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff0000, transparent);
         }
         .wallet-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
+            position: relative;
         }
         .wallet-header h1 {
-            font-size: 48px;
-            background: linear-gradient(135deg, #00ccff, #0099ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,0,0,0.8), 0 0 40px rgba(255,0,0,0.4);
             margin-bottom: 10px;
+            font-family: 'Arial Black', sans-serif;
         }
         .wallet-header p {
-            color: rgba(255,255,255,0.7);
-            font-size: 16px;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
         }
 
         .chain-selector {
-            margin-bottom: 35px;
+            margin-bottom: 40px;
         }
         .chain-selector h3 {
-            color: #00ccff;
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 18px;
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+            border-left: 3px solid #ff0000;
+            padding-left: 15px;
         }
         .chain-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
         }
         .chain-card {
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 12px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 0;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             text-align: center;
         }
         .chain-card:hover {
-            border-color: #00ccff;
-            background: rgba(0,204,255,0.1);
-            transform: translateY(-2px);
+            border-color: #ff0000;
+            background: #1a0000;
+            transform: scale(1.05);
         }
         .chain-card.selected {
-            border-color: #00ccff;
-            background: rgba(0,204,255,0.2);
-            box-shadow: 0 0 20px rgba(0,204,255,0.4);
+            border-color: #ff0000;
+            background: #1a0000;
+            box-shadow: 0 0 20px rgba(255,0,0,0.4);
         }
         .chain-icon {
-            font-size: 36px;
-            margin-bottom: 8px;
+            font-size: 28px;
+            margin-bottom: 5px;
         }
         .chain-name {
-            font-weight: 600;
+            font-weight: 700;
             color: white;
-            font-size: 14px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .wallet-buttons {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 35px;
         }
         .wallet-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
+            background: #0a0a0a;
+            border: 1px solid #333;
             padding: 20px 30px;
-            border-radius: 12px;
+            border-radius: 0;
             color: white;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
+            justify-content: space-between;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        .wallet-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: #ff0000;
+            transition: width 0.3s;
+            z-index: 0;
+        }
+        .wallet-btn:hover:not(:disabled)::before {
+            width: 100%;
         }
         .wallet-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+            border-color: #ff0000;
+            box-shadow: 0 0 30px rgba(255,0,0,0.3);
+        }
+        .wallet-btn span {
+            position: relative;
+            z-index: 1;
         }
         .wallet-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.3;
             cursor: not-allowed;
         }
-        .wallet-btn.metamask { background: linear-gradient(135deg, #f6851b, #e2761b); }
-        .wallet-btn.phantom { background: linear-gradient(135deg, #ab9ff2, #5b4cdb); }
-        .wallet-btn.coinbase { background: linear-gradient(135deg, #0052ff, #0041cc); }
+        .wallet-btn.metamask:hover::before { background: #f6851b; }
+        .wallet-btn.phantom:hover::before { background: #ab9ff2; }
+        .wallet-btn.coinbase:hover::before { background: #0052ff; }
 
         .ai-section {
             border-top: 2px solid rgba(255,255,255,0.1);
@@ -188,17 +233,20 @@
         .ai-input::placeholder { color: rgba(255,255,255,0.5); }
 
         .info-box {
-            background: rgba(0,204,255,0.1);
-            border: 1px solid rgba(0,204,255,0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-left: 3px solid #ff0000;
+            border-radius: 0;
+            padding: 20px;
+            margin-top: 30px;
         }
         .info-box p {
-            color: rgba(255,255,255,0.8);
-            font-size: 13px;
-            line-height: 1.6;
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
+            line-height: 1.8;
             margin: 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .info-box strong { color: #00ccff; }
 
@@ -1322,8 +1370,9 @@
 
             for(let i=0;i<16;i++) {
                 const a = (i/16)*Math.PI*2;
-                scene.add(Object.assign(new THREE.PointLight(0xff0000, 0.5, 10),
-                    {position:{x:Math.cos(a)*r, y:0.5, z:Math.sin(a)*r}}));
+                const light = new THREE.PointLight(0xff0000, 0.5, 10);
+                light.position.set(Math.cos(a)*r, 0.5, Math.sin(a)*r);
+                scene.add(light);
             }
 
             // Particles
