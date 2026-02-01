@@ -739,6 +739,12 @@
             }
         }
     </style>
+
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <!-- Backend Connector -->
+    <script src="backend-connector.js"></script>
 </head>
 <body>
     <div id="loading">
@@ -1061,7 +1067,7 @@
                 gameState.wallet.substring(0, 6) + '...' + gameState.wallet.substring(gameState.wallet.length - 4);
             document.getElementById('userDisplay').textContent = displayWallet + ' (' + gameState.token + ')';
 
-            simulateLobbies();
+            loadLobbies();
             document.getElementById('loading').classList.add('hidden');
         }
 
@@ -1073,26 +1079,18 @@
         };
 
         // ==================== LOBBIES ====================
-        function simulateLobbies() {
-            const count = Math.floor(Math.random() * 4) + 2;
-            gameState.lobbies = [];
-
-            for (let i = 0; i < count; i++) {
-                const playerCount = Math.floor(Math.random() * 9) + 1;
-                const status = playerCount >= 10 ? 'full' : playerCount >= 2 ? 'active' : 'waiting';
-                const totalPot = (0.01 * playerCount).toFixed(3);
-
-                gameState.lobbies.push({
-                    id: 'LOBBY-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-                    players: playerCount,
-                    maxPlayers: 10,
-                    totalPot: totalPot,
-                    status: status,
-                    token: gameState.token
-                });
+        async function loadLobbies() {
+            try {
+                console.log('📡 Fetching lobbies from backend...');
+                const lobbies = await fetchLobbies();
+                gameState.lobbies = lobbies;
+                console.log('✅ Loaded', lobbies.length, 'lobbies');
+                renderLobbies();
+            } catch (error) {
+                console.error('❌ Error loading lobbies:', error);
+                gameState.lobbies = [];
+                renderLobbies();
             }
-
-            renderLobbies();
         }
 
         function renderLobbies() {
@@ -1199,11 +1197,15 @@
                 coins = [];
             }
 
-            simulateLobbies();
+            loadLobbies();
         };
 
         // ==================== GAME INIT ====================
         function initGame() {
+            // Initialize backend connection
+            console.log('🚀 Initializing backend connection...');
+            initBackendConnection();
+
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
             scene.fog = new THREE.Fog(0x000000, 0, 100);
