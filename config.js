@@ -1,9 +1,8 @@
 // Backend Configuration
 // Update this after deploying your backend to Render
 const CONFIG = {
-    // Your Render backend URL (update after deployment)
-    // Example: 'https://pvpai-backend-abc123.onrender.com'
-    BACKEND_URL: 'http://localhost:3000', // Change this to your Render URL
+    // Your Render backend URL
+    BACKEND_URL: 'https://pvpai-backend.onrender.com'
 
     // Fixed stake amount ($5 USD)
     FIXED_STAKE_USD: 5,
