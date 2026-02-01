@@ -1,12 +1,12 @@
 const { Pool } = require('pg');
 
-// Supabase pooler connection for IPv4 compatibility
+// Neon PostgreSQL connection (IPv4, serverless-optimized)
 const connectionConfig = {
-  host: 'aws-0-us-west-1.pooler.supabase.com',
-  port: 6543,
-  database: 'postgres',
-  user: 'postgres',
-  password: process.env.DB_PASSWORD,
+  host: 'ep-holy-sun-affjkw27-pooler.c-2.us-west-2.aws.neon.tech',
+  port: 5432,
+  database: 'neondb',
+  user: 'neondb_owner',
+  password: 'npg_CMZOad2yA3Ts',
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
