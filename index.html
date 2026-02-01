@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D World Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
+            background: #000;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+        #loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+        #loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+        #instructions {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(30,30,30,0.8));
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 14px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #joystick {
+            position: absolute;
+            bottom: 80px;
+            left: 80px;
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: none;
+            touch-action: none;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        #joystick-knob {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,255,255,0.5));
+            border: 3px solid white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+        .desktop-only {
+            display: inline;
+        }
+        .mobile-only {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            #joystick {
+                display: block;
+            }
+            #instructions {
+                font-size: 12px;
+                padding: 10px 15px;
+                top: 10px;
+            }
+            .desktop-only {
+                display: none;
+            }
+            .mobile-only {
+                display: inline;
+            }
+            #loading {
+                padding: 10px;
+            }
+            .loading-text {
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 480px) {
+            #joystick {
+                bottom: 60px;
+                left: 60px;
+                width: 120px;
+                height: 120px;
+            }
+            #instructions {
+                font-size: 11px;
+                padding: 8px 12px;
+            }
+        }
+
+        /* Loot item popup - shared styles */
+        .lootPopup {
+            position: fixed;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 30px;
+            border-radius: 15px;
+            border: 4px solid;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            min-width: 300px;
+            pointer-events: all;
+        }
+        .lootPopup.visible {
+            display: block;
+            animation: popupBounce 0.5s ease;
+        }
+        /* Gold/legendary popup */
+        #lootPopup1 {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 170, 0, 0.95));
+            border-color: #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4);
+        }
+        /* Purple/epic popup */
+        #lootPopup2 {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.95), rgba(75, 0, 130, 0.95));
+            border-color: #9370db;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.8), 0 0 60px rgba(138, 43, 226, 0.4);
+        }
+        /* Green/emerald popup */
+        #lootPopup3 {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+            border-color: #10b981;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.8), 0 0 60px rgba(16, 185, 129, 0.4);
+        }
+        @keyframes popupBounce {
+            0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+            50% { transform: translateX(-50%) scale(1.05); }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        .lootPopup h3 {
+            margin: 0 0 10px 0;
+            color: #fff;
+            font-size: 20px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .lootPopup p {
+            margin: 0 0 15px 0;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .lootPopup button {
+            background: linear-gradient(135deg, #fff, #ffe);
+            color: #000;
+            border: 3px solid;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        #lootPopup1 button {
+            border-color: #ffd700;
+        }
+        #lootPopup2 button {
+            border-color: #9370db;
+        }
+        #lootPopup3 button {
+            border-color: #10b981;
+        }
+        .lootPopup button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            background: linear-gradient(135deg, #ffffaa, #ffff88);
+        }
+        .lootPopup button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="loader"></div>
+        <div class="loading-text">LOADING WORLD...</div>
+    </div>
+
+    <div id="instructions">
+        <span class="desktop-only"><strong>WASD</strong> to Move | <strong>SHIFT</strong> to Sprint | <strong>SPACE</strong> to Jump</span>
+        <span class="mobile-only"><strong>Joystick</strong> to Move</span>
+    </div>
+
+    <div id="joystick">
+        <div id="joystick-knob"></div>
+    </div>
+
+    <!-- Loot item popups -->
+    <div id="lootPopup1" class="lootPopup">
+        <h3>⭐ Item Available</h3>
+        <p>Legendary Treasure</p>
+        <button id="openButton1">COLLECT</button>
+    </div>
+
+    <div id="lootPopup2" class="lootPopup">
+        <h3>💎 Item Available</h3>
+        <p>Epic Artifact</p>
+        <button id="openButton2">COLLECT</button>
+    </div>
+
+    <div id="lootPopup3" class="lootPopup">
+        <h3>🌟 Item Available</h3>
+        <p>Rare Crystal</p>
+        <button id="openButton3">COLLECT</button>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+
+        // Loading screen
+        const loadingScreen = document.getElementById('loading');
+        const loadingText = document.querySelector('.loading-text');
+
+        let loadedAssets = 0;
+        const totalAssets = 2;
+
+        function updateLoadingProgress() {
+            loadedAssets++;
+            loadingText.textContent = `LOADING... ${Math.round((loadedAssets / totalAssets) * 100)}%`;
+            if (loadedAssets >= totalAssets) {
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                }, 500);
+            }
+        }
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        scene.fog = new THREE.Fog(0x000000, 0, 80);
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 10, 15);
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            powerPreference: "high-performance"
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        document.body.appendChild(renderer.domElement);
+
+        // Post-processing
+        const composer = new EffectComposer(renderer);
+        const renderPass = new RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.5,
+            0.4,
+            0.85
+        );
+        composer.addPass(bloomPass);
+
+        const fxaaPass = new ShaderPass(FXAAShader);
+        const pixelRatio = renderer.getPixelRatio();
+        fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
+        fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
+        composer.addPass(fxaaPass);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+        scene.add(hemisphereLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        mainLight.position.set(0, 80, 10);
+        mainLight.castShadow = true;
+        mainLight.shadow.camera.left = -70;
+        mainLight.shadow.camera.right = 70;
+        mainLight.shadow.camera.top = 70;
+        mainLight.shadow.camera.bottom = -70;
+        mainLight.shadow.mapSize.width = 2048;
+        mainLight.shadow.mapSize.height = 2048;
+        mainLight.shadow.bias = -0.0001;
+        scene.add(mainLight);
+
+        // Corner accent lights
+        const neonLight1 = new THREE.PointLight(0xff00ff, 3, 60);
+        neonLight1.position.set(40, 10, 40);
+        scene.add(neonLight1);
+
+        const neonLight2 = new THREE.PointLight(0x00ffff, 3, 60);
+        neonLight2.position.set(-40, 10, -40);
+        scene.add(neonLight2);
+
+        const neonLight3 = new THREE.PointLight(0xff3366, 3, 60);
+        neonLight3.position.set(-40, 10, 40);
+        scene.add(neonLight3);
+
+        const neonLight4 = new THREE.PointLight(0x00ff88, 3, 60);
+        neonLight4.position.set(40, 10, -40);
+        scene.add(neonLight4);
+
+        // Create platform
+        const platformRadius = 37.5;
+
+        const textureCanvas = document.createElement('canvas');
+        textureCanvas.width = 2048;
+        textureCanvas.height = 2048;
+        const texCtx = textureCanvas.getContext('2d');
+
+        const bgGradient = texCtx.createRadialGradient(1024, 1024, 0, 1024, 1024, 1024);
+        bgGradient.addColorStop(0, '#1a2a3a');
+        bgGradient.addColorStop(0.5, '#0f1520');
+        bgGradient.addColorStop(1, '#050a10');
+        texCtx.fillStyle = bgGradient;
+        texCtx.fillRect(0, 0, 2048, 2048);
+
+        const hexSize = 60;
+        const hexHeight = hexSize * Math.sqrt(3);
+
+        for (let row = -2; row < 32; row++) {
+            for (let col = -2; col < 32; col++) {
+                const x = col * hexSize * 1.5;
+                const y = row * hexHeight + (col % 2) * (hexHeight / 2);
+
+                texCtx.strokeStyle = '#00d9ff';
+                texCtx.lineWidth = 2;
+                texCtx.globalAlpha = 0.6;
+                texCtx.shadowBlur = 10;
+                texCtx.shadowColor = '#00d9ff';
+
+                texCtx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i;
+                    const hx = x + Math.cos(angle) * hexSize;
+                    const hy = y + Math.sin(angle) * hexSize;
+                    if (i === 0) texCtx.moveTo(hx, hy);
+                    else texCtx.lineTo(hx, hy);
+                }
+                texCtx.closePath();
+                texCtx.stroke();
+
+                const centerGlow = texCtx.createRadialGradient(x, y, 0, x, y, hexSize * 0.4);
+                centerGlow.addColorStop(0, 'rgba(0, 217, 255, 0.3)');
+                centerGlow.addColorStop(1, 'rgba(0, 217, 255, 0)');
+                texCtx.fillStyle = centerGlow;
+                texCtx.fill();
+            }
+        }
+
+        texCtx.shadowBlur = 0;
+
+        const floorTexture = new THREE.CanvasTexture(textureCanvas);
+        floorTexture.needsUpdate = true;
+
+        const platformGeometry = new THREE.CircleGeometry(platformRadius, 64);
+        const platformMaterial = new THREE.MeshStandardMaterial({
+            map: floorTexture,
+            roughness: 0.3,
+            metalness: 0.7,
+            emissive: new THREE.Color(0x002244),
+            emissiveMap: floorTexture,
+            emissiveIntensity: 0.5
+        });
+
+        const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+        platform.rotation.x = -Math.PI / 2;
+        platform.position.y = 0;
+        platform.receiveShadow = true;
+        scene.add(platform);
+
+        // Glowing ring around edge
+        const ringGeometry = new THREE.RingGeometry(platformRadius - 0.5, platformRadius + 0.5, 64);
+        const ringMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ccff,
+            emissive: 0x00ccff,
+            emissiveIntensity: 1.5,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide
+        });
+
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.y = 0.1;
+        scene.add(ring);
+
+        // Ring lights
+        const ringLightCount = 16;
+        for (let i = 0; i < ringLightCount; i++) {
+            const angle = (i / ringLightCount) * Math.PI * 2;
+            const x = Math.cos(angle) * platformRadius;
+            const z = Math.sin(angle) * platformRadius;
+
+            const light = new THREE.PointLight(0x00ccff, 0.5, 10);
+            light.position.set(x, 0.5, z);
+            scene.add(light);
+        }
+
+        // Create loot items
+        const textureLoader = new THREE.TextureLoader();
+
+        // LOOT ITEM 1 - Gold Legendary
+        const lootGroup1 = new THREE.Group();
+        const lootCanvas1 = document.createElement('canvas');
+        lootCanvas1.width = 1024;
+        lootCanvas1.height = 576;
+        const lootCtx1 = lootCanvas1.getContext('2d');
+
+        lootCtx1.fillStyle = '#ffd700';
+        lootCtx1.fillRect(0, 0, 1024, 576);
+        lootCtx1.fillStyle = '#000';
+        lootCtx1.font = 'bold 120px Arial';
+        lootCtx1.textAlign = 'center';
+        lootCtx1.textBaseline = 'middle';
+        lootCtx1.fillText('⭐', 512, 288);
+
+        const lootTexture1 = new THREE.CanvasTexture(lootCanvas1);
+        const lootGeometry = new THREE.PlaneGeometry(4, 2.25);
+        const lootMesh1 = new THREE.Mesh(lootGeometry, new THREE.MeshBasicMaterial({
+            map: lootTexture1,
+            side: THREE.DoubleSide
+        }));
+        lootMesh1.rotation.x = -Math.PI / 2;
+        lootGroup1.add(lootMesh1);
+
+        const borderGeometry = new THREE.PlaneGeometry(4.4, 2.65);
+        const borderMesh1 = new THREE.Mesh(borderGeometry, new THREE.MeshBasicMaterial({
+            color: 0xffd700,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        }));
+        borderMesh1.rotation.x = -Math.PI / 2;
+        borderMesh1.position.y = -0.05;
+        lootGroup1.add(borderMesh1);
+
+        const outerGlowGeometry = new THREE.PlaneGeometry(5.5, 3.5);
+        const outerGlowMesh1 = new THREE.Mesh(outerGlowGeometry, new THREE.MeshBasicMaterial({
+            color: 0xffaa00,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending
+        }));
+        outerGlowMesh1.rotation.x = -Math.PI / 2;
+        outerGlowMesh1.position.y = -0.1;
+        lootGroup1.add(outerGlowMesh1);
+
+        lootGroup1.position.set(0, 0.5, -28);
+        scene.add(lootGroup1);
+
+        const lootLight1 = new THREE.PointLight(0xffd700, 2, 10);
+        lootLight1.position.set(0, 1, -28);
+        scene.add(lootLight1);
+
+        const lootPosition1 = { x: 0, z: -28, radius: 4 };
+
+        // LOOT ITEM 2 - Purple Epic
+        const lootGroup2 = new THREE.Group();
+        const lootCanvas2 = document.createElement('canvas');
+        lootCanvas2.width = 1024;
+        lootCanvas2.height = 576;
+        const lootCtx2 = lootCanvas2.getContext('2d');
+
+        lootCtx2.fillStyle = '#9370db';
+        lootCtx2.fillRect(0, 0, 1024, 576);
+        lootCtx2.fillStyle = '#000';
+        lootCtx2.font = 'bold 120px Arial';
+        lootCtx2.textAlign = 'center';
+        lootCtx2.textBaseline = 'middle';
+        lootCtx2.fillText('💎', 512, 288);
+
+        const lootTexture2 = new THREE.CanvasTexture(lootCanvas2);
+        const lootMesh2 = new THREE.Mesh(lootGeometry.clone(), new THREE.MeshBasicMaterial({
+            map: lootTexture2,
+            side: THREE.DoubleSide
+        }));
+        lootMesh2.rotation.x = -Math.PI / 2;
+        lootGroup2.add(lootMesh2);
+
+        const borderMesh2 = new THREE.Mesh(borderGeometry.clone(), new THREE.MeshBasicMaterial({
+            color: 0x9370db,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        }));
+        borderMesh2.rotation.x = -Math.PI / 2;
+        borderMesh2.position.y = -0.05;
+        lootGroup2.add(borderMesh2);
+
+        const outerGlowMesh2 = new THREE.Mesh(outerGlowGeometry.clone(), new THREE.MeshBasicMaterial({
+            color: 0x8a2be2,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending
+        }));
+        outerGlowMesh2.rotation.x = -Math.PI / 2;
+        outerGlowMesh2.position.y = -0.1;
+        lootGroup2.add(outerGlowMesh2);
+
+        lootGroup2.position.set(-24, 0.5, -18);
+        scene.add(lootGroup2);
+
+        const lootLight2 = new THREE.PointLight(0x9370db, 2, 10);
+        lootLight2.position.set(-24, 1, -18);
+        scene.add(lootLight2);
+
+        const lootPosition2 = { x: -24, z: -18, radius: 4 };
+
+        // LOOT ITEM 3 - Green Rare
+        const lootGroup3 = new THREE.Group();
+        const lootCanvas3 = document.createElement('canvas');
+        lootCanvas3.width = 1024;
+        lootCanvas3.height = 576;
+        const lootCtx3 = lootCanvas3.getContext('2d');
+
+        lootCtx3.fillStyle = '#10b981';
+        lootCtx3.fillRect(0, 0, 1024, 576);
+        lootCtx3.fillStyle = '#000';
+        lootCtx3.font = 'bold 120px Arial';
+        lootCtx3.textAlign = 'center';
+        lootCtx3.textBaseline = 'middle';
+        lootCtx3.fillText('🌟', 512, 288);
+
+        const lootTexture3 = new THREE.CanvasTexture(lootCanvas3);
+        const lootMesh3 = new THREE.Mesh(lootGeometry.clone(), new THREE.MeshBasicMaterial({
+            map: lootTexture3,
+            side: THREE.DoubleSide
+        }));
+        lootMesh3.rotation.x = -Math.PI / 2;
+        lootGroup3.add(lootMesh3);
+
+        const borderMesh3 = new THREE.Mesh(borderGeometry.clone(), new THREE.MeshBasicMaterial({
+            color: 0x10b981,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        }));
+        borderMesh3.rotation.x = -Math.PI / 2;
+        borderMesh3.position.y = -0.05;
+        lootGroup3.add(borderMesh3);
+
+        const outerGlowMesh3 = new THREE.Mesh(outerGlowGeometry.clone(), new THREE.MeshBasicMaterial({
+            color: 0x059669,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending
+        }));
+        outerGlowMesh3.rotation.x = -Math.PI / 2;
+        outerGlowMesh3.position.y = -0.1;
+        lootGroup3.add(outerGlowMesh3);
+
+        lootGroup3.position.set(24, 0.5, -18);
+        scene.add(lootGroup3);
+
+        const lootLight3 = new THREE.PointLight(0x10b981, 2, 10);
+        lootLight3.position.set(24, 1, -18);
+        scene.add(lootLight3);
+
+        const lootPosition3 = { x: 24, z: -18, radius: 4 };
+
+        // Popup management
+        const lootPopup1 = document.getElementById('lootPopup1');
+        const openButton1 = document.getElementById('openButton1');
+        const lootPopup2 = document.getElementById('lootPopup2');
+        const openButton2 = document.getElementById('openButton2');
+        const lootPopup3 = document.getElementById('lootPopup3');
+        const openButton3 = document.getElementById('openButton3');
+
+        openButton1.addEventListener('click', () => {
+            alert('Legendary Treasure Collected!');
+        });
+        openButton2.addEventListener('click', () => {
+            alert('Epic Artifact Collected!');
+        });
+        openButton3.addEventListener('click', () => {
+            alert('Rare Crystal Collected!');
+        });
+
+        // Load character
+        const loader = new GLTFLoader();
+        const playerGroup = new THREE.Group();
+        let playerModel = null;
+        let playerMixer = null;
+        let walkAction = null;
+        let idleAction = null;
+        let runAction = null;
+        let playerBody = null;
+        scene.add(playerGroup);
+
+        const robotModel = {
+            url: 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
+            scale: 0.75,
+            rotation: 0
+        };
+
+        loader.load(
+            robotModel.url,
+            (gltf) => {
+                playerModel = gltf.scene;
+                playerModel.scale.set(robotModel.scale, robotModel.scale, robotModel.scale);
+                playerModel.rotation.y = robotModel.rotation;
+
+                playerModel.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+
+                        if (child.material) {
+                            if (child.material.color) {
+                                const currentColor = child.material.color;
+                                if (currentColor.r > 0.5 && currentColor.g < 0.5) {
+                                    child.material.color = new THREE.Color(0x00ccff);
+                                    child.material.emissive = new THREE.Color(0x0088cc);
+                                    child.material.emissiveIntensity = 0.3;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                playerGroup.add(playerModel);
+                playerBody = playerModel;
+
+                if (gltf.animations && gltf.animations.length) {
+                    playerMixer = new THREE.AnimationMixer(playerModel);
+
+                    gltf.animations.forEach((clip) => {
+                        const name = clip.name.toLowerCase();
+                        const action = playerMixer.clipAction(clip);
+
+                        action.setLoop(THREE.LoopRepeat);
+                        action.clampWhenFinished = false;
+                        action.enable = true;
+                        action.timeScale = 1;
+                        action.time = 0;
+
+                        if (name.includes('walk')) {
+                            walkAction = action;
+                        } else if (name.includes('idle')) {
+                            idleAction = action;
+                        } else if (name.includes('run')) {
+                            runAction = action;
+                        }
+                    });
+
+                    if (idleAction) {
+                        idleAction.reset();
+                        idleAction.setEffectiveWeight(1);
+                        idleAction.play();
+                    }
+                }
+
+                updateLoadingProgress();
+            },
+            (progress) => {
+                console.log('Loading character:', (progress.loaded / progress.total * 100) + '%');
+            },
+            (error) => {
+                console.error('Error loading character:', error);
+                const fallbackGeo = new THREE.CapsuleGeometry(0.5, 1.5, 8, 16);
+                const fallbackMat = new THREE.MeshStandardMaterial({
+                    color: 0x00ffff,
+                    emissive: 0x0066ff,
+                    emissiveIntensity: 0.5,
+                    metalness: 0.8,
+                    roughness: 0.2
+                });
+                playerBody = new THREE.Mesh(fallbackGeo, fallbackMat);
+                playerBody.castShadow = true;
+                playerBody.position.y = 1;
+                playerGroup.add(playerBody);
+                updateLoadingProgress();
+            }
+        );
+
+        playerGroup.position.set(0, 0, 0);
+
+        // Collision objects
+        const collisionObjects = [];
+        const buildingModels = [];
+
+        function loadBuilding(x, z, scale, rotation = 0) {
+            loader.load(
+                'https://threejs.org/examples/models/gltf/LittlestTokyo.glb',
+                (gltf) => {
+                    const building = gltf.scene;
+                    building.scale.set(scale * 0.01, scale * 0.01, scale * 0.01);
+                    building.position.set(x, 0, z);
+                    building.rotation.y = rotation;
+
+                    building.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+
+                    scene.add(building);
+                    buildingModels.push(building);
+                    collisionObjects.push({ x, z, radius: scale * 5 });
+                },
+                undefined,
+                (error) => {
+                    console.log('Building load error - skipping');
+                }
+            );
+        }
+
+        const buildingPositions = [
+            { x: 30, z: 30, scale: 3, rotation: 0 },
+            { x: -30, z: 30, scale: 3, rotation: Math.PI / 2 },
+            { x: 30, z: -30, scale: 3, rotation: Math.PI },
+            { x: -30, z: -30, scale: 3, rotation: -Math.PI / 2 },
+            { x: 50, z: 0, scale: 4, rotation: 0 },
+            { x: -50, z: 0, scale: 4, rotation: 0 },
+            { x: 0, z: 50, scale: 4, rotation: Math.PI / 4 },
+            { x: 0, z: -50, scale: 4, rotation: -Math.PI / 4 }
+        ];
+
+        buildingPositions.forEach(pos => {
+            loadBuilding(pos.x, pos.z, pos.scale, pos.rotation);
+        });
+
+        // Particles
+        const particleCount = 500;
+        const particleGeometry = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        const particleVelocities = [];
+
+        for (let i = 0; i < particleCount; i++) {
+            particlePositions[i * 3] = (Math.random() - 0.5) * 80;
+            particlePositions[i * 3 + 1] = Math.random() * 50;
+            particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 80;
+
+            particleVelocities.push({
+                x: (Math.random() - 0.5) * 0.02,
+                y: (Math.random() - 0.5) * 0.02,
+                z: (Math.random() - 0.5) * 0.02
+            });
+        }
+
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 0.1,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particleSystem);
+
+        updateLoadingProgress();
+
+        // Movement system
+        const keys = { w: false, a: false, s: false, d: false, shift: false, space: false };
+        const moveSpeed = 0.15;
+        const sprintMultiplier = 2;
+        const playerVelocity = new THREE.Vector3();
+
+        // Jump system
+        let isJumping = false;
+        let verticalVelocity = 0;
+        const jumpStrength = 0.35;
+        const gravity = 0.015;
+        const groundLevel = 0;
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (keys.hasOwnProperty(key)) {
+                keys[key] = true;
+            }
+            if (e.key === 'Shift') keys.shift = true;
+            if (e.key === ' ' && !isJumping) {
+                keys.space = true;
+                isJumping = true;
+                verticalVelocity = jumpStrength;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (keys.hasOwnProperty(key)) {
+                keys[key] = false;
+            }
+            if (e.key === 'Shift') keys.shift = false;
+            if (e.key === ' ') keys.space = false;
+        });
+
+        // Mobile joystick
+        const joystick = document.getElementById('joystick');
+        const joystickKnob = document.getElementById('joystick-knob');
+        let joystickActive = false;
+        let joystickVector = { x: 0, y: 0 };
+
+        function handleTouch(e) {
+            e.preventDefault();
+            if (e.type === 'touchstart' || e.type === 'touchmove') {
+                joystickActive = true;
+                const touch = e.touches[0];
+                const rect = joystick.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                let deltaX = touch.clientX - centerX;
+                let deltaY = touch.clientY - centerY;
+
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const maxDistance = rect.width / 3;
+
+                if (distance > maxDistance) {
+                    deltaX = (deltaX / distance) * maxDistance;
+                    deltaY = (deltaY / distance) * maxDistance;
+                }
+
+                joystickKnob.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+
+                joystickVector.x = deltaX / maxDistance;
+                joystickVector.y = deltaY / maxDistance;
+            } else if (e.type === 'touchend' || e.type === 'touchcancel') {
+                joystickActive = false;
+                joystickKnob.style.transform = 'translate(-50%, -50%)';
+                joystickVector.x = 0;
+                joystickVector.y = 0;
+            }
+        }
+
+        joystick.addEventListener('touchstart', handleTouch, { passive: false });
+        joystick.addEventListener('touchmove', handleTouch, { passive: false });
+        joystick.addEventListener('touchend', handleTouch, { passive: false });
+        joystick.addEventListener('touchcancel', handleTouch, { passive: false });
+
+        function checkCollision(newX, newZ) {
+            for (const obj of collisionObjects) {
+                const dx = newX - obj.x;
+                const dz = newZ - obj.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                if (distance < obj.radius + 1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        let lastTime = performance.now();
+        let frames = 0;
+        let fps = 60;
+        const clock = new THREE.Clock();
+
+        function animate(currentTime) {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+
+            if (playerMixer) {
+                const safeDelta = Math.min(delta, 0.1);
+                playerMixer.update(safeDelta);
+            }
+
+            frames++;
+            if (currentTime - lastTime >= 1000) {
+                fps = frames;
+                frames = 0;
+                lastTime = currentTime;
+            }
+
+            playerVelocity.set(0, 0, 0);
+
+            const currentSpeed = keys.shift ? moveSpeed * sprintMultiplier : moveSpeed;
+
+            if (keys.w) playerVelocity.z -= currentSpeed;
+            if (keys.s) playerVelocity.z += currentSpeed;
+            if (keys.a) playerVelocity.x -= currentSpeed;
+            if (keys.d) playerVelocity.x += currentSpeed;
+
+            if (joystickActive) {
+                playerVelocity.x += joystickVector.x * currentSpeed * 1.5;
+                playerVelocity.z += joystickVector.y * currentSpeed * 1.5;
+            }
+
+            const isMoving = playerVelocity.length() > 0;
+
+            if (isMoving) {
+                const newX = playerGroup.position.x + playerVelocity.x;
+                const newZ = playerGroup.position.z + playerVelocity.z;
+
+                if (!checkCollision(newX, newZ)) {
+                    playerGroup.position.x = newX;
+                    playerGroup.position.z = newZ;
+
+                    const targetAngle = Math.atan2(playerVelocity.x, playerVelocity.z);
+                    let angleDiff = targetAngle - playerGroup.rotation.y;
+
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+                    playerGroup.rotation.y += angleDiff * 0.15;
+
+                    const targetAction = runAction || walkAction;
+
+                    if (targetAction) {
+                        const needsSwitch = !targetAction.isRunning() || targetAction.weight === 0;
+
+                        if (needsSwitch) {
+                            if (idleAction) {
+                                idleAction.stop();
+                                idleAction.weight = 0;
+                            }
+                            if (walkAction && targetAction === runAction) {
+                                walkAction.stop();
+                                walkAction.weight = 0;
+                            }
+
+                            targetAction.reset();
+                            targetAction.setLoop(THREE.LoopRepeat, Infinity);
+                            targetAction.clampWhenFinished = false;
+                            targetAction.timeScale = 1.0;
+                            targetAction.setEffectiveWeight(1);
+                            targetAction.enabled = true;
+                            targetAction.paused = false;
+                            targetAction.play();
+                        }
+                    }
+                }
+
+                const distanceFromCenter = Math.sqrt(
+                    playerGroup.position.x * playerGroup.position.x +
+                    playerGroup.position.z * playerGroup.position.z
+                );
+                const maxRadius = 33.75;
+
+                if (distanceFromCenter > maxRadius) {
+                    const angle = Math.atan2(playerGroup.position.z, playerGroup.position.x);
+                    playerGroup.position.x = Math.cos(angle) * maxRadius;
+                    playerGroup.position.z = Math.sin(angle) * maxRadius;
+                }
+            }
+
+            // Jump physics
+            if (isJumping) {
+                verticalVelocity -= gravity;
+                playerGroup.position.y += verticalVelocity;
+
+                if (playerGroup.position.y <= groundLevel) {
+                    playerGroup.position.y = groundLevel;
+                    verticalVelocity = 0;
+                    isJumping = false;
+                }
+            }
+
+            if (!isMoving) {
+                if (idleAction) {
+                    const needsSwitch = !idleAction.isRunning() || idleAction.weight === 0;
+
+                    if (needsSwitch) {
+                        if (walkAction) {
+                            walkAction.stop();
+                            walkAction.weight = 0;
+                        }
+                        if (runAction) {
+                            runAction.stop();
+                            runAction.weight = 0;
+                        }
+
+                        idleAction.reset();
+                        idleAction.setLoop(THREE.LoopRepeat, Infinity);
+                        idleAction.clampWhenFinished = false;
+                        idleAction.timeScale = 1.0;
+                        idleAction.setEffectiveWeight(1);
+                        idleAction.enabled = true;
+                        idleAction.paused = false;
+                        idleAction.play();
+                    }
+                }
+            }
+
+            // Animate particles
+            const positions = particleGeometry.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] += particleVelocities[i].x;
+                positions[i * 3 + 1] += particleVelocities[i].y;
+                positions[i * 3 + 2] += particleVelocities[i].z;
+
+                if (Math.abs(positions[i * 3]) > 40) particleVelocities[i].x *= -1;
+                if (positions[i * 3 + 1] > 50 || positions[i * 3 + 1] < 0) particleVelocities[i].y *= -1;
+                if (Math.abs(positions[i * 3 + 2]) > 40) particleVelocities[i].z *= -1;
+            }
+            particleGeometry.attributes.position.needsUpdate = true;
+
+            // Animate lights
+            neonLight1.intensity = 3 + Math.sin(currentTime * 0.003) * 1.5;
+            neonLight2.intensity = 3 + Math.sin(currentTime * 0.002 + 1) * 1.5;
+            neonLight3.intensity = 3 + Math.sin(currentTime * 0.004 + 2) * 1.5;
+            neonLight4.intensity = 3 + Math.sin(currentTime * 0.0025 + 3) * 1.5;
+
+            // Animate loot items
+            lootGroup1.position.y = 0.5 + Math.sin(currentTime * 0.002) * 0.4;
+            lootGroup1.rotation.y = currentTime * 0.0008;
+            borderMesh1.material.opacity = 0.7 + Math.sin(currentTime * 0.003) * 0.2;
+            outerGlowMesh1.material.opacity = 0.2 + Math.sin(currentTime * 0.004) * 0.15;
+            lootLight1.intensity = 1.5 + Math.sin(currentTime * 0.004) * 0.8;
+
+            lootGroup2.position.y = 0.5 + Math.sin(currentTime * 0.002 + 1) * 0.4;
+            lootGroup2.rotation.y = currentTime * 0.0008;
+            borderMesh2.material.opacity = 0.7 + Math.sin(currentTime * 0.003 + 1) * 0.2;
+            outerGlowMesh2.material.opacity = 0.2 + Math.sin(currentTime * 0.004 + 1) * 0.15;
+            lootLight2.intensity = 1.5 + Math.sin(currentTime * 0.004 + 1) * 0.8;
+
+            lootGroup3.position.y = 0.5 + Math.sin(currentTime * 0.002 + 2) * 0.4;
+            lootGroup3.rotation.y = currentTime * 0.0008;
+            borderMesh3.material.opacity = 0.7 + Math.sin(currentTime * 0.003 + 2) * 0.2;
+            outerGlowMesh3.material.opacity = 0.2 + Math.sin(currentTime * 0.004 + 2) * 0.15;
+            lootLight3.intensity = 1.5 + Math.sin(currentTime * 0.004 + 2) * 0.8;
+
+            // Show/hide popups
+            const distToLoot1 = Math.sqrt(
+                Math.pow(playerGroup.position.x - lootPosition1.x, 2) +
+                Math.pow(playerGroup.position.z - lootPosition1.z, 2)
+            );
+            if (distToLoot1 < lootPosition1.radius) {
+                lootPopup1.classList.add('visible');
+            } else {
+                lootPopup1.classList.remove('visible');
+            }
+
+            const distToLoot2 = Math.sqrt(
+                Math.pow(playerGroup.position.x - lootPosition2.x, 2) +
+                Math.pow(playerGroup.position.z - lootPosition2.z, 2)
+            );
+            if (distToLoot2 < lootPosition2.radius) {
+                lootPopup2.classList.add('visible');
+            } else {
+                lootPopup2.classList.remove('visible');
+            }
+
+            const distToLoot3 = Math.sqrt(
+                Math.pow(playerGroup.position.x - lootPosition3.x, 2) +
+                Math.pow(playerGroup.position.z - lootPosition3.z, 2)
+            );
+            if (distToLoot3 < lootPosition3.radius) {
+                lootPopup3.classList.add('visible');
+            } else {
+                lootPopup3.classList.remove('visible');
+            }
+
+            // Camera
+            const cameraOffset = new THREE.Vector3(0, 10, 15);
+            const cameraPosition = playerGroup.position.clone().add(cameraOffset);
+            camera.position.lerp(cameraPosition, 0.05);
+
+            const lookAtTarget = playerGroup.position.clone().add(new THREE.Vector3(0, 2, 0));
+            camera.lookAt(lookAtTarget);
+
+            composer.render();
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+
+            const pixelRatio = renderer.getPixelRatio();
+            fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
+            fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
+        });
+
+        animate(performance.now());
+    </script>
+</body>
+</html>
