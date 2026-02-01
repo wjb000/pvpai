@@ -1117,7 +1117,7 @@
     </div>
 
     <div id="instructions" class="hidden">
-        <strong>WASD</strong> Move | <strong>SHIFT</strong> Sprint | <strong>Left Click</strong> Attack | <strong>ESC</strong> Exit
+        <strong>WASD</strong> Move | <strong>SHIFT</strong> Sprint | <strong>SPACE</strong> Jump | <strong>Click</strong> Shoot | <strong>ESC</strong> Menu
     </div>
 
     <script type="importmap">
@@ -1158,9 +1158,12 @@
         };
 
         let scene, camera, renderer, composer, clock;
-        let playerGroup, playerModel, playerMixer, sword;
-        let isAttacking = false;
-        let attackCooldown = 0;
+        let playerGroup, playerModel, playerMixer, gun, muzzleFlash;
+        let isJumping = false;
+        let verticalVelocity = 0;
+        const jumpStrength = 0.4;
+        const gravity = 0.02;
+        let shootCooldown = 0;
         let walkAction = null, idleAction = null, runAction = null;
         let otherPlayers = [], bullets = [], coins = [];
         let keys = { w: false, a: false, s: false, d: false, shift: false };
@@ -1622,17 +1625,38 @@
                 scene.add(light);
             }
 
-            // Particles
-            const pc = 500, pg = new THREE.BufferGeometry(), pos = new Float32Array(pc*3);
-            for(let i=0;i<pc;i++) {
-                pos[i*3] = (Math.random()-0.5)*80;
-                pos[i*3+1] = Math.random()*50;
-                pos[i*3+2] = (Math.random()-0.5)*80;
+            // Animated particles with velocities
+            const pc = 500;
+            window.particleGeometry = new THREE.BufferGeometry();
+            const pos = new Float32Array(pc * 3);
+            window.particleVelocities = [];
+
+            for(let i = 0; i < pc; i++) {
+                pos[i * 3] = (Math.random() - 0.5) * 80;
+                pos[i * 3 + 1] = Math.random() * 50;
+                pos[i * 3 + 2] = (Math.random() - 0.5) * 80;
+
+                // Random velocities for each particle
+                window.particleVelocities.push({
+                    x: (Math.random() - 0.5) * 0.05,
+                    y: (Math.random() - 0.5) * 0.05,
+                    z: (Math.random() - 0.5) * 0.05
+                });
             }
-            pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            scene.add(new THREE.Points(pg, new THREE.PointsMaterial({
-                color:0xffffff, size:0.1, transparent:true, opacity:0.6, blending:THREE.AdditiveBlending
-            })));
+
+            window.particleGeometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+            window.particleSystem = new THREE.Points(
+                window.particleGeometry,
+                new THREE.PointsMaterial({
+                    color: 0xffffff,
+                    size: 0.15,
+                    transparent: true,
+                    opacity: 0.8,
+                    blending: THREE.AdditiveBlending
+                })
+            );
+            scene.add(window.particleSystem);
         }
 
         function loadPlayer() {
@@ -1697,7 +1721,7 @@
                         }
                     }
 
-                    createSword();
+                    createGun();
                 },
                 undefined,
                 () => {
@@ -1712,72 +1736,120 @@
                     fb.position.y = 1;
                     fb.castShadow = true;
                     playerGroup.add(fb);
-                    createSword();
+                    createGun();
                 }
             );
         }
 
-        function createSword() {
-            sword = new THREE.Group();
+        function createGun() {
+            gun = new THREE.Group();
 
-            // Blade
-            const blade = new THREE.Mesh(
-                new THREE.BoxGeometry(0.1, 0.1, 2.5),
+            // Main body - futuristic design
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(0.3, 0.2, 0.8),
                 new THREE.MeshStandardMaterial({
-                    color: 0xcccccc,
-                    metalness: 1.0,
-                    roughness: 0.1,
+                    color: 0x1a1a1a,
+                    metalness: 0.9,
+                    roughness: 0.2,
                     emissive: 0xff0000,
-                    emissiveIntensity: 0.3
+                    emissiveIntensity: 0.2
                 })
             );
-            blade.position.z = -1.25;
-            sword.add(blade);
+            body.position.z = -0.3;
+            gun.add(body);
 
-            // Blade tip (pointed)
-            const tip = new THREE.Mesh(
-                new THREE.ConeGeometry(0.08, 0.3, 4),
+            // Barrel - long and sleek
+            const barrel = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, 1.2, 16),
                 new THREE.MeshStandardMaterial({
-                    color: 0xcccccc,
+                    color: 0x333333,
                     metalness: 1.0,
-                    roughness: 0.1,
-                    emissive: 0xff0000,
-                    emissiveIntensity: 0.3
+                    roughness: 0.1
                 })
             );
-            tip.rotation.x = Math.PI / 2;
-            tip.position.z = -2.65;
-            sword.add(tip);
+            barrel.rotation.z = Math.PI / 2;
+            barrel.position.set(0.6, 0.08, -0.3);
+            gun.add(barrel);
 
-            // Handle
+            // Barrel tip glow
+            const barrelTip = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.06, 0.06, 0.1, 16),
+                new THREE.MeshStandardMaterial({
+                    color: 0xff0000,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 1.0
+                })
+            );
+            barrelTip.rotation.z = Math.PI / 2;
+            barrelTip.position.set(1.25, 0.08, -0.3);
+            gun.add(barrelTip);
+
+            // Under barrel rail
+            const rail = new THREE.Mesh(
+                new THREE.BoxGeometry(0.8, 0.05, 0.08),
+                new THREE.MeshStandardMaterial({
+                    color: 0xff0000,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 0.5,
+                    metalness: 0.8
+                })
+            );
+            rail.position.set(0.4, -0.1, -0.3);
+            gun.add(rail);
+
+            // Handle/Grip
             const handle = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.08, 0.08, 0.6, 8),
-                new THREE.MeshStandardMaterial({color: 0x1a1a1a, roughness: 0.7})
+                new THREE.BoxGeometry(0.15, 0.4, 0.25),
+                new THREE.MeshStandardMaterial({
+                    color: 0x0a0a0a,
+                    roughness: 0.8
+                })
             );
-            handle.rotation.x = Math.PI / 2;
-            handle.position.z = 0.3;
-            sword.add(handle);
+            handle.position.set(0, -0.3, -0.1);
+            gun.add(handle);
 
-            // Guard (crossguard)
-            const guard = new THREE.Mesh(
-                new THREE.BoxGeometry(0.5, 0.1, 0.1),
-                new THREE.MeshStandardMaterial({color: 0x333333, metalness: 0.8, roughness: 0.3})
+            // Magazine
+            const magazine = new THREE.Mesh(
+                new THREE.BoxGeometry(0.12, 0.35, 0.2),
+                new THREE.MeshStandardMaterial({
+                    color: 0xff0000,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 0.3,
+                    metalness: 0.7
+                })
             );
-            guard.position.z = 0;
-            sword.add(guard);
+            magazine.position.set(0, -0.35, -0.3);
+            gun.add(magazine);
 
-            // Pommel
-            const pommel = new THREE.Mesh(
-                new THREE.SphereGeometry(0.1, 8, 8),
-                new THREE.MeshStandardMaterial({color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5})
+            // Scope/sight
+            const scope = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.06, 0.06, 0.3, 16),
+                new THREE.MeshStandardMaterial({
+                    color: 0x111111,
+                    metalness: 0.9,
+                    roughness: 0.1
+                })
             );
-            pommel.position.z = 0.6;
-            sword.add(pommel);
+            scope.rotation.z = Math.PI / 2;
+            scope.position.set(0.1, 0.2, -0.3);
+            gun.add(scope);
 
-            sword.position.set(0.5, 1.0, -0.3);
-            sword.rotation.x = Math.PI / 4;
-            sword.rotation.y = Math.PI / 2;
-            playerGroup.add(sword);
+            // Muzzle flash
+            muzzleFlash = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.5, 0.5),
+                new THREE.MeshBasicMaterial({
+                    color: 0xffff00,
+                    transparent: true,
+                    opacity: 0,
+                    blending: THREE.AdditiveBlending
+                })
+            );
+            muzzleFlash.position.set(1.3, 0.08, -0.3);
+            gun.add(muzzleFlash);
+
+            gun.position.set(0.6, 0.9, -0.4);
+            gun.rotation.y = Math.PI / 2;
+            playerGroup.add(gun);
         }
 
         function spawnOtherPlayers() {
@@ -1838,7 +1910,13 @@
                 const k = e.key.toLowerCase();
                 if(keys.hasOwnProperty(k)) keys[k]=true;
                 if(e.key==='Shift') keys.shift=true;
-                if(e.key==='Escape' && document.pointerLockElement) document.exitPointerLock();
+
+                // Jump with spacebar
+                if(e.key === ' ' && !isJumping && gameState.inGame) {
+                    e.preventDefault();
+                    isJumping = true;
+                    verticalVelocity = jumpStrength;
+                }
             });
 
             document.addEventListener('keyup', e => {
@@ -1847,22 +1925,10 @@
                 if(e.key==='Shift') keys.shift=false;
             });
 
-            document.addEventListener('mousedown', () => mouseDown=true);
-            document.addEventListener('mouseup', () => mouseDown=false);
-
-            document.addEventListener('click', () => {
-                if(gameState.inGame && !document.pointerLockElement) {
-                    document.body.requestPointerLock();
-                }
-            });
-
-            document.addEventListener('mousemove', e => {
-                if(document.pointerLockElement) {
-                    // Improved mouse sensitivity for smoother camera control
-                    mouseX += e.movementX * 0.003;
-                    mouseY -= e.movementY * 0.003;
-                    // Limit vertical rotation to prevent camera flipping
-                    mouseY = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseY));
+            // Cursor-based shooting
+            document.addEventListener('click', e => {
+                if(gameState.inGame) {
+                    shoot(e);
                 }
             });
 
@@ -1878,56 +1944,73 @@
         }
 
         // ==================== SHOOTING ====================
-        function attack() {
-            if(attackCooldown > 0 || isAttacking) return;
+        // Mouse position for cursor-based aiming
+        let mouse = new THREE.Vector2();
+        const raycaster = new THREE.Raycaster();
 
-            isAttacking = true;
-            attackCooldown = 30; // 30 frames cooldown (~0.5 seconds)
+        function shoot(event) {
+            if(shootCooldown > 0) return;
 
-            // Sword swing animation
-            if(sword) {
-                const originalRotation = sword.rotation.x;
-                // Swing sword forward
-                sword.rotation.x = Math.PI / 2;
+            shootCooldown = 15; // Shoot cooldown
 
+            // Muzzle flash
+            if(muzzleFlash) {
+                muzzleFlash.material.opacity = 1;
                 setTimeout(() => {
-                    if(sword) sword.rotation.x = originalRotation;
-                    isAttacking = false;
-                }, 300);
+                    if(muzzleFlash) muzzleFlash.material.opacity = 0;
+                }, 50);
             }
 
-            // Check for hits immediately
-            checkMeleeHit();
+            // Get mouse position for raycasting
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Create bullet
+            const bullet = new THREE.Mesh(
+                new THREE.SphereGeometry(0.15),
+                new THREE.MeshBasicMaterial({
+                    color: 0xffff00,
+                    emissive: 0xffff00,
+                    emissiveIntensity: 1
+                })
+            );
+
+            bullet.position.copy(playerGroup.position);
+            bullet.position.y += 1.5;
+
+            // Shoot toward mouse cursor position
+            const intersectPoint = new THREE.Vector3();
+            raycaster.ray.at(20, intersectPoint); // Get point 20 units away
+
+            const direction = new THREE.Vector3()
+                .subVectors(intersectPoint, bullet.position)
+                .normalize();
+
+            bullet.userData.velocity = direction.multiplyScalar(5);
+            bullet.userData.life = 100;
+
+            scene.add(bullet);
+            bullets.push(bullet);
+
+            // Check hit on next frame
+            setTimeout(() => checkBulletHits(), 10);
         }
 
-        function checkMeleeHit() {
-            const meleeRange = 3; // 3 units attack range
+        function checkBulletHits() {
+            bullets.forEach(bullet => {
+                otherPlayers.forEach(p => {
+                    if(p.userData.health <= 0) return;
 
-            otherPlayers.forEach(p => {
-                if(p.userData.health <= 0) return;
-
-                const distance = playerGroup.position.distanceTo(p.position);
-
-                if(distance < meleeRange) {
-                    // Check if player is facing the target
-                    const directionToTarget = new THREE.Vector3()
-                        .subVectors(p.position, playerGroup.position)
-                        .normalize();
-
-                    const playerForward = new THREE.Vector3(0, 0, -1)
-                        .applyQuaternion(playerGroup.quaternion);
-
-                    const angle = playerForward.angleTo(directionToTarget);
-
-                    // Only hit if target is in front (within 90 degrees)
-                    if(angle < Math.PI / 2) {
+                    if(bullet.position.distanceTo(p.position) < 2) {
                         p.userData.health -= 10;
 
                         const hp = p.userData.health / p.userData.maxHealth;
                         p.userData.healthBar.scale.x = hp;
                         p.userData.healthBar.position.x = -(1.5*(1-hp))/2;
 
-                        // Flash red effect
+                        // Flash red
                         if(p.children[0]) {
                             const originalColor = p.children[0].material.color.getHex();
                             p.children[0].material.color.setHex(0xff0000);
@@ -1948,7 +2031,7 @@
                             if(alive === 1) setTimeout(() => showVictory(), 1000);
                         }
                     }
-                }
+                });
             });
         }
 
@@ -2221,11 +2304,31 @@
                 }
             }
 
-            // Melee Attack
-            if(mouseDown && attackCooldown === 0) attack();
-            if(attackCooldown > 0) attackCooldown--;
+            // Shooting cooldown
+            if(shootCooldown > 0) shootCooldown--;
 
-            // Removed bullets - now using melee combat
+            // Update bullets
+            bullets.forEach((b, i) => {
+                b.position.add(b.userData.velocity);
+                b.userData.life--;
+
+                if(b.userData.life <= 0) {
+                    scene.remove(b);
+                    bullets.splice(i, 1);
+                }
+            });
+
+            // Jump physics
+            if(isJumping) {
+                verticalVelocity -= gravity;
+                playerGroup.position.y += verticalVelocity;
+
+                if(playerGroup.position.y <= 0) {
+                    playerGroup.position.y = 0;
+                    verticalVelocity = 0;
+                    isJumping = false;
+                }
+            }
 
             // AI movement (UPDATED TO USE SITE MOVEMENT SPEED)
             otherPlayers.forEach(p => {
@@ -2274,6 +2377,28 @@
             });
 
             checkCoinCollection();
+
+            // Animate particles - move and sparkle
+            if(window.particleGeometry && window.particleVelocities) {
+                const positions = window.particleGeometry.attributes.position.array;
+                for(let i = 0; i < window.particleVelocities.length; i++) {
+                    // Update positions
+                    positions[i * 3] += window.particleVelocities[i].x;
+                    positions[i * 3 + 1] += window.particleVelocities[i].y;
+                    positions[i * 3 + 2] += window.particleVelocities[i].z;
+
+                    // Bounce off boundaries
+                    if(Math.abs(positions[i * 3]) > 40) window.particleVelocities[i].x *= -1;
+                    if(positions[i * 3 + 1] > 50 || positions[i * 3 + 1] < 0) window.particleVelocities[i].y *= -1;
+                    if(Math.abs(positions[i * 3 + 2]) > 40) window.particleVelocities[i].z *= -1;
+                }
+                window.particleGeometry.attributes.position.needsUpdate = true;
+
+                // Sparkle effect - animate opacity
+                if(window.particleSystem) {
+                    window.particleSystem.material.opacity = 0.6 + Math.sin(Date.now() * 0.002) * 0.3;
+                }
+            }
 
             // COPIED FROM SITE - Simple elevated camera following player from fixed angle
             const cameraOffset = new THREE.Vector3(0, 10, 15);
