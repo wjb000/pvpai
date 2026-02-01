@@ -554,38 +554,33 @@
             color: #fff;
         }
 
-        /* GAME HUD */
+        /* GAME HUD - MINIMAL */
         #gameHUD {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 30px;
+            left: 30px;
             z-index: 1000;
+            font-family: 'Courier New', monospace;
         }
         .hud-panel {
-            background: rgba(0,0,0,0.95);
-            border: 1px solid #ff0000;
-            border-left: 3px solid #ff0000;
-            border-radius: 0;
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            min-width: 280px;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            background: none;
+            border: none;
+            padding: 0;
+            margin-bottom: 15px;
         }
         .hud-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            font-size: 12px;
+            display: block;
+            margin: 0;
+            font-size: 16px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
         .hud-label {
-            color: rgba(255,255,255,0.5);
-            font-weight: 600;
+            display: none;
         }
         .hud-value {
-            color: #ff0000;
+            color: #fff;
             font-weight: 900;
             font-family: 'Courier New', monospace;
         }
@@ -989,28 +984,10 @@
     <div id="gameHUD" class="hidden">
         <div class="hud-panel">
             <div class="hud-row">
-                <span class="hud-label">Wallet:</span>
-                <span class="hud-value" id="hudWallet">---</span>
+                <span class="hud-value">$<span id="hudCollected">0.00</span></span>
             </div>
             <div class="hud-row">
-                <span class="hud-label">Stake:</span>
-                <span class="hud-value" id="hudStake">0.00</span>
-            </div>
-            <div class="hud-row">
-                <span class="hud-label">Collected:</span>
-                <span class="hud-value" id="hudCollected">+0.00</span>
-            </div>
-            <div class="health-bar-container">
-                <div class="health-bar">
-                    <div class="health-bar-fill" id="healthBar" style="width:100%"></div>
-                    <div class="health-text" id="healthText">100 / 100 HP</div>
-                </div>
-            </div>
-            <div class="ammo-display">
-                🔫 <span id="ammoCount">30</span> / ∞
-            </div>
-            <div class="players-alive">
-                👥 <span id="playersAlive">10</span> alive
+                <span class="hud-value"><span id="playersAlive">10</span> ALIVE</span>
             </div>
         </div>
     </div>
@@ -1459,18 +1436,38 @@
                     playerModel.scale.setScalar(0.75);
                     playerModel.traverse(c => {
                         if(c.isMesh && c.material) {
-                            c.material.color.setHex(gameState.robotColor);
-                            c.material.emissive.setHex(gameState.robotColor);
-                            c.material.emissiveIntensity = 0.3;
+                            // Only color accents, keep body metallic
+                            const isAccent = c.name && (
+                                c.name.includes('Chest') ||
+                                c.name.includes('Shoulder') ||
+                                c.name.includes('Eye') ||
+                                c.name.includes('Light') ||
+                                c.name.includes('Accent')
+                            );
+
+                            if(isAccent) {
+                                c.material.color.setHex(gameState.robotColor);
+                                c.material.emissive.setHex(gameState.robotColor);
+                                c.material.emissiveIntensity = 0.5;
+                            } else {
+                                c.material.color.setHex(0x444444);
+                                c.material.metalness = 0.8;
+                                c.material.roughness = 0.3;
+                            }
                             c.castShadow = c.receiveShadow = true;
                         }
                     });
                     playerGroup.add(playerModel);
 
+                    // Enable all animations
                     if(gltf.animations.length) {
                         playerMixer = new THREE.AnimationMixer(playerModel);
-                        const idle = THREE.AnimationClip.findByName(gltf.animations, 'Idle');
-                        if(idle) playerMixer.clipAction(idle).play();
+                        gltf.animations.forEach(clip => {
+                            const action = playerMixer.clipAction(clip);
+                            if(clip.name === 'Idle' || clip.name === 'idle') {
+                                action.play();
+                            }
+                        });
                     }
 
                     createGun();
