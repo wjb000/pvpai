@@ -11,10 +11,8 @@ const CONFIG = {
 
     // Approximate crypto amounts (update based on current prices)
     FIXED_STAKE: {
-        ETH: 0.002,  // ~$5 worth of ETH
         SOL: 0.05,   // ~$5 worth of SOL
-        BASE: 0.002, // ~$5 worth of ETH on Base
-        POLYGON: 0.002 // ~$5 worth of MATIC
+        BASE: 0.002  // ~$5 worth of ETH on Base
     },
 
     // Enable debug mode for testing

@@ -695,11 +695,9 @@
         /* CROSSHAIR */
         #crosshair {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             pointer-events: none;
             z-index: 998;
+            transform: translate(-50%, -50%);
         }
         .crosshair-line {
             position: absolute;
@@ -949,21 +947,13 @@
             <div class="chain-selector">
                 <h3>Select Blockchain</h3>
                 <div class="chain-grid">
-                    <div class="chain-card selected" data-chain="eth" data-token="ETH" onclick="selectChain(this)">
-                        <div class="chain-icon">⟠</div>
-                        <div class="chain-name">Ethereum</div>
-                    </div>
-                    <div class="chain-card" data-chain="sol" data-token="SOL" onclick="selectChain(this)">
+                    <div class="chain-card selected" data-chain="sol" data-token="SOL" onclick="selectChain(this)">
                         <div class="chain-icon">◎</div>
                         <div class="chain-name">Solana</div>
                     </div>
                     <div class="chain-card" data-chain="base" data-token="ETH" onclick="selectChain(this)">
                         <div class="chain-icon">🔵</div>
                         <div class="chain-name">Base</div>
-                    </div>
-                    <div class="chain-card" data-chain="polygon" data-token="MATIC" onclick="selectChain(this)">
-                        <div class="chain-icon">🟣</div>
-                        <div class="chain-name">Polygon</div>
                     </div>
                 </div>
             </div>
@@ -1141,8 +1131,8 @@
         // ==================== STATE ====================
         const gameState = {
             wallet: null,
-            chain: 'eth',
-            token: 'ETH',
+            chain: 'sol',
+            token: 'SOL',
             isAI: false,
             apiKey: null,
             inGame: false,
@@ -1206,7 +1196,24 @@
                     wallet = resp.publicKey.toString();
 
                 } else if (type === 'coinbase') {
-                    throw new Error('Coinbase Wallet integration coming soon. Use MetaMask or Phantom.');
+                    // Coinbase Wallet uses ethereum provider (for Base chain)
+                    if (typeof window.ethereum === 'undefined') {
+                        throw new Error('Coinbase Wallet not installed. Please install Coinbase Wallet extension.');
+                    }
+
+                    // Check if it's specifically Coinbase Wallet
+                    if (window.ethereum.isCoinbaseWallet || window.coinbaseWalletExtension) {
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        wallet = accounts[0];
+
+                        // Verify chain
+                        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                        console.log('Connected to chain:', chainId);
+                    } else {
+                        // Fallback to regular ethereum provider
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        wallet = accounts[0];
+                    }
                 }
 
                 gameState.wallet = wallet;
@@ -1847,8 +1854,10 @@
             muzzleFlash.position.set(1.3, 0.08, -0.3);
             gun.add(muzzleFlash);
 
-            gun.position.set(0.6, 0.9, -0.4);
-            gun.rotation.y = Math.PI / 2;
+            // Position gun in robot's right hand
+            gun.position.set(0.4, 1.2, 0.6); // Right hand position (x=right, y=up, z=forward)
+            gun.rotation.y = Math.PI; // Face forward
+            gun.rotation.z = -Math.PI / 12; // Slight tilt
             playerGroup.add(gun);
         }
 
@@ -1941,6 +1950,15 @@
                     cameraZoom = Math.max(8, Math.min(20, cameraZoom));
                 }
             }, { passive: false });
+
+            // Crosshair follows mouse
+            document.addEventListener('mousemove', e => {
+                const crosshair = document.getElementById('crosshair');
+                if(crosshair) {
+                    crosshair.style.left = e.clientX + 'px';
+                    crosshair.style.top = e.clientY + 'px';
+                }
+            });
         }
 
         // ==================== SHOOTING ====================
@@ -1949,9 +1967,46 @@
         const raycaster = new THREE.Raycaster();
 
         function shoot(event) {
-            if(shootCooldown > 0) return;
+            if(shootCooldown > 0 || !gun) return;
 
             shootCooldown = 15; // Shoot cooldown
+
+            // Get mouse position for raycasting
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Get gun barrel position in world coordinates
+            const gunWorldPos = new THREE.Vector3();
+            gun.getWorldPosition(gunWorldPos);
+
+            // Get direction from camera through mouse cursor
+            const targetPoint = new THREE.Vector3();
+            raycaster.ray.at(50, targetPoint); // Point 50 units away through cursor
+
+            // Calculate direction from gun barrel to target
+            const direction = new THREE.Vector3()
+                .subVectors(targetPoint, gunWorldPos)
+                .normalize();
+
+            // Make gun point toward target
+            const gunTarget = gunWorldPos.clone().add(direction.clone().multiplyScalar(10));
+            gun.lookAt(gunTarget);
+            gun.rotateY(Math.PI); // Adjust for gun model orientation
+
+            // Gun recoil animation
+            const originalPos = gun.position.clone();
+            const originalRot = gun.rotation.clone();
+
+            gun.position.z -= 0.15; // Recoil back
+
+            setTimeout(() => {
+                if(gun) {
+                    gun.position.copy(originalPos);
+                    gun.rotation.copy(originalRot);
+                }
+            }, 100);
 
             // Muzzle flash
             if(muzzleFlash) {
@@ -1961,15 +2016,9 @@
                 }, 50);
             }
 
-            // Get mouse position for raycasting
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-
-            // Create bullet
+            // Create bullet from gun barrel position
             const bullet = new THREE.Mesh(
-                new THREE.SphereGeometry(0.15),
+                new THREE.SphereGeometry(0.2),
                 new THREE.MeshBasicMaterial({
                     color: 0xffff00,
                     emissive: 0xffff00,
@@ -1977,19 +2026,13 @@
                 })
             );
 
-            bullet.position.copy(playerGroup.position);
-            bullet.position.y += 1.5;
+            // Spawn bullet at gun barrel tip (slightly forward from gun center)
+            bullet.position.copy(gunWorldPos);
+            bullet.position.add(direction.clone().multiplyScalar(1.5)); // Spawn ahead of barrel
 
-            // Shoot toward mouse cursor position
-            const intersectPoint = new THREE.Vector3();
-            raycaster.ray.at(20, intersectPoint); // Get point 20 units away
-
-            const direction = new THREE.Vector3()
-                .subVectors(intersectPoint, bullet.position)
-                .normalize();
-
-            bullet.userData.velocity = direction.multiplyScalar(5);
-            bullet.userData.life = 100;
+            // Set bullet velocity
+            bullet.userData.velocity = direction.multiplyScalar(2.0); // Bullet speed
+            bullet.userData.life = 120;
 
             scene.add(bullet);
             bullets.push(bullet);
@@ -2306,6 +2349,33 @@
 
             // Shooting cooldown
             if(shootCooldown > 0) shootCooldown--;
+
+            // Make gun track cursor position for aiming
+            if(gun && playerGroup) {
+                const crosshair = document.getElementById('crosshair');
+                if(crosshair && crosshair.style.left) {
+                    const cursorX = parseFloat(crosshair.style.left);
+                    const cursorY = parseFloat(crosshair.style.top);
+
+                    if(!isNaN(cursorX) && !isNaN(cursorY)) {
+                        // Convert cursor screen position to normalized device coordinates
+                        const ndcX = (cursorX / window.innerWidth) * 2 - 1;
+                        const ndcY = -(cursorY / window.innerHeight) * 2 + 1;
+
+                        // Create raycaster from cursor position
+                        const aimRaycaster = new THREE.Raycaster();
+                        aimRaycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
+
+                        // Get target point
+                        const aimTarget = new THREE.Vector3();
+                        aimRaycaster.ray.at(30, aimTarget);
+
+                        // Make gun look at target
+                        gun.lookAt(aimTarget);
+                        gun.rotateY(Math.PI); // Adjust for gun model orientation
+                    }
+                }
+            }
 
             // Update bullets
             bullets.forEach((b, i) => {
