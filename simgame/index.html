@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blank Room • Multiplayer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background: #000; color: #fff; }
+        #ui { position: absolute; top: 10px; left: 10px; z-index: 100; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 8px; }
+        #controls { font-size: 14px; line-height: 1.4; }
+        #error { color: #ff6b6b; font-weight: bold; margin-top: 8px; }
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; pointer-events: none; z-index: 50; }
+        #chat { position: absolute; bottom: 20px; left: 20px; width: 300px; z-index: 100; }
+        #chat input { width: 100%; padding: 8px; background: rgba(0,0,0,0.7); border: 1px solid #555; color: #fff; border-radius: 4px; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h2 style="margin:0 0 8px 0;">Blank Room • Multiplayer</h2>
+        <div id="controls">
+            <strong>WASD</strong> move • <strong>Space</strong> jump • <strong>P</strong> respawn • <strong>Shift</strong> sprint • <strong>H</strong> hide UI<br>
+            Chat below
+        </div>
+        <div id="status">
+            <strong>Location:</strong> Open Plaza • Sims · locked • Solo<br>
+            <strong>Dashboard</strong> Characters<br>
+            <strong>AI pilot</strong> AI · starting ⏸ Pause AI Animations ▶ Auto gameplay<br>
+            <span id="pos">— fps x 0 · z 0</span><br>
+            <strong>Camera</strong> Player view Sims · locked V — First person
+        </div>
+        <div id="error" style="display:none;"></div>
+        <button id="jumpBtn" style="margin-top:10px; padding:6px 12px;">− JUMP</button>
+    </div>
+
+    <div id="crosshair"></div>
+
+    <div id="chat">
+        <input type="text" id="chatInput" placeholder="Type message and press Enter...">
+    </div>
+
+    <script type="module">
+        // Import the FIXED peer.js (now provides broadcastPlayerState)
+        import { broadcastPlayerState } from './multiplayer/peer.js';
+
+        // === THREE.JS SCENE SETUP (Blank Room) ===
+        let scene, camera, renderer;
+        let player, keys = {};
+        let velocity = { x: 0, y: 0, z: 0 };
+        let isJumping = false;
+        let uiHidden = false;
+
+        function initThree() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x111111, 10, 80);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 5); // Eye height
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.body.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambient = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambient);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(10, 20, 10);
+            scene.add(dirLight);
+
+            // === Blank Room Environment ===
+            // Floor
+            const floorGeo = new THREE.PlaneGeometry(30, 30);
+            const floorMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            scene.add(floor);
+
+            // Walls (simple room)
+            const wallMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+            const wallHeight = 8;
+            
+            // Back wall
+            const backWall = new THREE.Mesh(new THREE.BoxGeometry(30, wallHeight, 1), wallMat);
+            backWall.position.set(0, wallHeight/2, -15);
+            scene.add(backWall);
+
+            // Left wall
+            const leftWall = new THREE.Mesh(new THREE.BoxGeometry(1, wallHeight, 30), wallMat);
+            leftWall.position.set(-15, wallHeight/2, 0);
+            scene.add(leftWall);
+
+            // Right wall
+            const rightWall = new THREE.Mesh(new THREE.BoxGeometry(1, wallHeight, 30), wallMat);
+            rightWall.position.set(15, wallHeight/2, 0);
+            scene.add(rightWall);
+
+            // Some pillars / objects for "Blank Room" feel
+            const pillarGeo = new THREE.CylinderGeometry(0.8, 0.8, 6, 8);
+            const pillarMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+            for (let i = -2; i <= 2; i++) {
+                const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+                pillar.position.set(i * 5, 3, -8);
+                scene.add(pillar);
+            }
+
+            // Player representation (simple capsule-like)
+            const playerGeo = new THREE.CapsuleGeometry(0.4, 1.2, 4, 8);
+            const playerMat = new THREE.MeshLambertMaterial({ color: 0x00aaff });
+            player = new THREE.Mesh(playerGeo, playerMat);
+            player.position.set(0, 1.6, 0);
+            scene.add(player);
+
+            // Hide player mesh from own camera (first person)
+            player.visible = false;
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Pointer lock for FPS controls
+            renderer.domElement.addEventListener('click', () => {
+                renderer.domElement.requestPointerLock();
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                if (document.pointerLockElement === renderer.domElement) {
+                    document.addEventListener('mousemove', onMouseMove, false);
+                } else {
+                    document.removeEventListener('mousemove', onMouseMove, false);
+                }
+            });
+        }
+
+        let yaw = 0, pitch = 0;
+        function onMouseMove(e) {
+            yaw -= e.movementX * 0.002;
+            pitch -= e.movementY * 0.002;
+            pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, pitch));
+        }
+
+        function updatePlayer() {
+            const speed = keys['ShiftLeft'] || keys['ShiftRight'] ? 0.25 : 0.12;
+            const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0,1,0), yaw);
+            const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0,1,0), yaw);
+
+            let moveX = 0, moveZ = 0;
+
+            if (keys['KeyW']) moveZ -= 1;
+            if (keys['KeyS']) moveZ += 1;
+            if (keys['KeyA']) moveX -= 1;
+            if (keys['KeyD']) moveX += 1;
+
+            if (moveX !== 0 || moveZ !== 0) {
+                const len = Math.sqrt(moveX*moveX + moveZ*moveZ);
+                moveX /= len; moveZ /= len;
+
+                velocity.x = forward.x * moveZ * speed + right.x * moveX * speed;
+                velocity.z = forward.z * moveZ * speed + right.z * moveX * speed;
+            } else {
+                velocity.x *= 0.85;
+                velocity.z *= 0.85;
+            }
+
+            // Gravity & jump
+            velocity.y -= 0.015; // gravity
+            if ((keys['Space'] || keys[' ']) && !isJumping && player.position.y <= 1.61) {
+                velocity.y = 0.35;
+                isJumping = true;
+            }
+
+            player.position.x += velocity.x;
+            player.position.y += velocity.y;
+            player.position.z += velocity.z;
+
+            // Floor collision
+            if (player.position.y < 1.6) {
+                player.position.y = 1.6;
+                velocity.y = 0;
+                isJumping = false;
+            }
+
+            // Simple wall bounds
+            player.position.x = Math.max(-14, Math.min(14, player.position.x));
+            player.position.z = Math.max(-14, Math.min(14, player.position.z));
+
+            // Update camera to follow player (first person)
+            camera.position.copy(player.position);
+            camera.position.y += 0.6; // eye offset
+
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = yaw;
+            camera.rotation.x = pitch;
+
+            // Update UI position
+            const posEl = document.getElementById('pos');
+            if (posEl) {
+                posEl.textContent = `— fps x ${player.position.x.toFixed(1)} · z ${player.position.z.toFixed(1)}`;
+            }
+
+            // Broadcast state (this was the missing export - now it works!)
+            if (Math.random() < 0.1) { // throttle broadcasts
+                broadcastPlayerState({
+                    position: { x: player.position.x, y: player.position.y, z: player.position.z },
+                    rotation: { y: yaw, x: pitch },
+                    timestamp: Date.now()
+                });
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updatePlayer();
+            renderer.render(scene, camera);
+        }
+
+        // Keyboard handling
+        function setupControls() {
+            window.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                
+                if (e.code === 'KeyP') {
+                    // Respawn
+                    player.position.set(0, 1.6, 0);
+                    velocity = { x:0, y:0, z:0 };
+                    yaw = 0; pitch = 0;
+                }
+                
+                if (e.code === 'KeyH') {
+                    uiHidden = !uiHidden;
+                    document.getElementById('ui').style.display = uiHidden ? 'none' : 'block';
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keys[e.code] = false;
+            });
+
+            // Jump button (mobile friendly)
+            document.getElementById('jumpBtn').addEventListener('click', () => {
+                if (!isJumping && player.position.y <= 1.61) {
+                    velocity.y = 0.35;
+                    isJumping = true;
+                }
+            });
+
+            // Chat
+            const chatInput = document.getElementById('chatInput');
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && chatInput.value.trim()) {
+                    console.log('[Chat] Sent:', chatInput.value);
+                    // In real multiplayer this would broadcast via the peer system
+                    broadcastPlayerState({ type: 'chat', message: chatInput.value, from: 'local' });
+                    chatInput.value = '';
+                }
+            });
+        }
+
+        // Error display helper (in case something else fails)
+        function showError(msg) {
+            const errEl = document.getElementById('error');
+            errEl.style.display = 'block';
+            errEl.textContent = 'Load Error: ' + msg;
+            console.error(msg);
+        }
+
+        // Boot everything
+        async function boot() {
+            try {
+                initThree();
+                setupControls();
+                animate();
+
+                // Test the fixed broadcast immediately
+                broadcastPlayerState({ type: 'init', message: 'Game loaded successfully with fixed peer module' });
+
+                console.log('%c[Blank Room] Game initialized successfully with fixed multiplayer/peer.js', 'color:#0f0');
+            } catch (err) {
+                showError(err.message || err);
+            }
+        }
+
+        boot();
+    </script>
+</body>
+</html>
