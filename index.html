@@ -937,7 +937,7 @@
         <div class="loading-text">INITIALIZING BATTLE ARENA...</div>
     </div>
 
-    <div id="walletModal">
+    <div id="walletModal" class="hidden">
         <div class="wallet-container">
             <div class="wallet-header">
                 <h1>PvP AI</h1>
@@ -1246,7 +1246,7 @@
             document.getElementById('tokenDisplay').value = gameState.token;
 
             const displayWallet = gameState.isAI ?
-                '🤖 AI Bot' :
+                '🤖 AI Bot' : gameState.isGuest ? '🎮 Guest' :
                 gameState.wallet.substring(0, 6) + '...' + gameState.wallet.substring(gameState.wallet.length - 4);
             document.getElementById('userDisplay').textContent = displayWallet + ' (' + gameState.token + ')';
 
@@ -2491,7 +2491,16 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             if(composer) composer.setSize(window.innerWidth, window.innerHeight);
         });
-    </script>
+    
+        // No login wall: everyone starts as a guest. Wallet connect is optional (window.connectWallet still works).
+        (() => {
+            if (!gameState.wallet) {
+                gameState.wallet = 'guest-' + Math.random().toString(36).slice(2, 8);
+                gameState.isGuest = true;
+                proceedToDashboard();
+            }
+        })();
+</script>
 </body>
 </html>
 
